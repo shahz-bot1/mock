@@ -96,7 +96,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
     <div id="lessonList"></div>
   </section>
-  <p class="foot">Varisai Studio v1 · <span id="buildVer"></span> · harmonium · 🔇 no sound on iPhone? turn off silent mode</p>
+  <p class="foot">Varisai Studio v1 · harmonium · 🔇 no sound on iPhone? turn off silent mode</p>
 </div>
 
 <!-- ============ PLAYER VIEW ============ -->
@@ -139,12 +139,6 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 </div>
 
 <script>
-// Build version - bump with each deployment to verify live status
-const BUILD_VERSION = "2026.10.09-6";
-document.addEventListener("DOMContentLoaded", () => {
-  const bv = document.getElementById("buildVer");
-  if (bv) bv.textContent = "build " + BUILD_VERSION;
-});
 "use strict";
 
 /* ================= LESSON DATA =================
@@ -591,11 +585,11 @@ function schedulePass(t0opt) {
   // 8x also gets an absolute floor (250ms) so high tempos stay legible.
   const overlap = speed >= 8 ? Math.max(2.0, 0.25 / step)
                 : speed >= 4 ? 1.8 : 0.96;
-  // PDF definitions (Janta V2): "-" = silent gap, "~" (dheergam) = extend previous note.
+  // PDF definitions (Sarali + Janta V2): "-" = silent gap, "~" (dheergam) = extend previous note.
   // Other lessons: "-" = dheergam = extend previous (legacy behavior).
   const soundDurs = notes.map(() => 0);
   const isHold = s => s === "~";
-  const isJanta2 = curLesson && curLesson.id === "janta2";
+  const isPdfLesson = curLesson && (curLesson.id === "janta2" || curLesson.id === "sarali");
   const extendPrev = (i) => {
     for (let j = i - 1; j >= 0; j--) {
       if (!isRest(notes[j]) && !isHold(notes[j])) { soundDurs[j] += step; break; }
@@ -605,8 +599,8 @@ function schedulePass(t0opt) {
     if (isHold(s)) {
       extendPrev(i); // dheergam: hold the previous note (PDF)
     } else if (isRest(s)) {
-      if (!isJanta2) extendPrev(i); // legacy: "-" = dheergam in other lessons
-      // Janta V2: "-" = silent gap, do not extend
+      if (!isPdfLesson) extendPrev(i); // legacy: "-" = dheergam in other lessons
+      // PDF lessons: "-" = silent gap, do not extend
     } else {
       soundDurs[i] = step;
     }
