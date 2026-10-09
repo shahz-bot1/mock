@@ -445,10 +445,14 @@ function schedulePass() {
   const step = (60 / tempo) / speed; // seconds per swara
   const t0 = actx.currentTime + 0.08;
   const chips = [...document.getElementById("swaras").children];
+  // Overlap (legato): at 4x/8x each note rings past its slot so the
+  // harmonium attack is audible; attacks stay on the grid.
+  const overlap = speed >= 8 ? 2.0 : speed >= 4 ? 1.8 : 0.96;
+  const sndDur = step * overlap;
   notes.forEach((s, i) => {
     if (!isRest(s)) {
-      const played = playSampledNote(t0 + i * step, s, step * 0.96);
-      if (!played) playSynthNote(t0 + i * step, s, step * 0.96);
+      const played = playSampledNote(t0 + i * step, s, sndDur);
+      if (!played) playSynthNote(t0 + i * step, s, sndDur);
     }
     playTimer.push(setTimeout(() => {
       if (!playing) return;
