@@ -450,9 +450,20 @@ function schedulePass(t0opt) {
   // 8x also gets an absolute floor (250ms) so high tempos stay legible.
   const overlap = speed >= 8 ? Math.max(2.0, 0.25 / step)
                 : speed >= 4 ? 1.8 : 0.96;
-  const sndDur = step * overlap;
+  // Dheergam: "," extends the previous note (S , = "Saa"), not silence.
+  const soundDurs = notes.map(() => 0);
+  notes.forEach((s, i) => {
+    if (isRest(s)) {
+      for (let j = i - 1; j >= 0; j--) {
+        if (!isRest(notes[j])) { soundDurs[j] += step; break; }
+      }
+    } else {
+      soundDurs[i] = step;
+    }
+  });
   notes.forEach((s, i) => {
     if (!isRest(s)) {
+      const sndDur = Math.max(soundDurs[i] * 0.96, step * overlap);
       const played = playSampledNote(t0 + i * step, s, sndDur);
       if (!played) playSynthNote(t0 + i * step, s, sndDur);
     }
