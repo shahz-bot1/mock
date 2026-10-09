@@ -75,6 +75,9 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 .tgroup .chip { flex: 1 1 0; border: 0; background: transparent; padding: 7px 2px; }
 .talaline > .chip { flex: none; align-self: center; }
 .tgroup .chip.playing { background: var(--accent); border-radius: 6px; }
+.talaline.barsep { gap: 6px; align-items: center; }
+.talaline.barsep .tgroup { border: 0; background: transparent; padding: 4px 2px; }
+.tsep { color: var(--muted); font-weight: 700; }
 .chip.hold { opacity: .55; }
 .swararow.grouped { display: block; }
 .view { display: none; } .view.on { display: block; }
@@ -96,7 +99,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
     <div id="lessonList"></div>
   </section>
-  <p class="foot">Varisai Studio v1 · harmonium · 🔇 no sound on iPhone? turn off silent mode</p>
+  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-1 · 🔇 no sound on iPhone? turn off silent mode</p>
 </div>
 
 <!-- ============ PLAYER VIEW ============ -->
@@ -190,50 +193,23 @@ const LESSONS = [
 ,
 {
   id: "sarali", name: "Sarali Varisai", num: 1,
-  desc: "14 patterns \u00b7 shivkumar.org PDF \u00b7 with laya", raga: "Mayamalavagowla",
+  desc: "14 patterns \u00b7 swara sequences with laya grouping", raga: "Mayamalavagowla",
+  layaNoDash: true, barSep: true,
   patterns: [
-    { title: "1 \u00b7 Simple ascent / descent", sub: "Plain scale up and down", laya: "1234 5678",
-      notes: ["S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "M1"], ["P", "D1"], ["N3", "S'"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "2 \u00b7 Focus on R and N", sub: "Emphasis on second note", laya: "12-12-1234 and 1234 5678",
-      notes: ["S", "R1", "-", "S", "R1", "-", "S", "R1", "G3", "M1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "-", "S'", "N3", "-", "S'", "N3", "D1", "P", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "-", "S", "R1", "-"], ["S", "R1"], ["G3", "M1"]], [["S", "R1", "G3", "M1"], ["P", "D1"], ["N3", "S'"]], [["S'", "N3", "-", "S'", "N3", "-"], ["S'", "N3"], ["D1", "P"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "3 \u00b7 Focus on G and D", sub: "Emphasis on third note", laya: "123-123-12 and 1234 5678",
-      notes: ["S", "R1", "G3", "-", "S", "R1", "G3", "-", "S", "R1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "-", "S", "N3", "D1", "-", "S", "N3", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "-", "S"], ["R1", "G3", "-"], ["S", "R1"]], [["S", "R1", "G3", "M1"], ["P", "D1"], ["N3", "S'"]], [["S'", "N3", "D1", "-", "S"], ["N3", "D1", "-"], ["S", "N3"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "4 \u00b7 Focus on M and P", sub: "Emphasis on fourth note", laya: "1234-1234 and 1234 5678",
-      notes: ["S", "R1", "G3", "M1", "-", "S", "R1", "G3", "M1", "-", "S", "R1", "G3", "M1", "P", "D1", "N3", "S", "S'", "N3", "D1", "P", "-", "S'", "N3", "D1", "P", "-", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "M1", "-"], ["S", "R1"], ["G3", "M1", "-"]], [["S", "R1", "G3", "M1"], ["P", "D1"], ["N3", "S"]], [["S'", "N3", "D1", "P", "-"], ["S'", "N3"], ["D1", "P", "-"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "5 \u00b7 Focus on P and M (dheergam)", sub: "Dheergam on Pa", laya: "1234 56-12 and 1234 5678",
-      notes: ["S", "R1", "G3", "M1", "P", "~", "-", "S", "R1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "~", "-", "S'", "N3", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "M1"], ["P", "~", "-"], ["S", "R1"]], [["S", "R1", "G3", "M1"], ["P", "D1"], ["N3", "S'"]], [["S'", "N3", "D1", "P"], ["M1", "~", "-"], ["S'", "N3"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "6 \u00b7 Focus on G and D (gap)", sub: "Gap after Da", laya: "1234 56-12 and 1234 5678",
-      notes: ["S", "R1", "G3", "M1", "P", "D1", "-", "S", "R1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "G3", "-", "S'", "N3", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "M1"], ["P", "D1", "-"], ["S", "R1"]], [["S", "R1", "G3", "M1"], ["P", "D1"], ["N3", "S'"]], [["S'", "N3", "D1", "P"], ["M1", "G3", "-"], ["S'", "N3"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "7 \u00b7 Focus on N and R (dheergam)", sub: "Dheergam on Ni and Ri", laya: "1234 56-7, and 1234 5678",
-      notes: ["S", "R1", "G3", "M1", "P", "D1", "N3", "~", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "G3", "R1", "~", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "M1"], ["P", "D1"], ["N3", "~"]], [["S", "R1", "G3", "M1"], ["P", "D1"], ["N3", "S'"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "~"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "8 \u00b7 Zigzag (pmgr, mpdn)", sub: "Zigzag pairs", laya: "1234 -4321 and 1234 5678",
-      notes: ["S", "R1", "G3", "M1", "P", "M1", "G3", "R1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "P", "D1", "N3", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "M1"], ["P", "M1"], ["G3", "R1"]], [["S", "R1", "G3", "M1"], ["P", "D1"], ["N3", "S'"]], [["S'", "N3", "D1", "P"], ["M1", "P"], ["D1", "N3"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "9 \u00b7 Zigzag (pmdp, mpgm)", sub: "Zigzag variant", laya: "1234 -4321 and 1234 5678",
-      notes: ["S", "R1", "G3", "M1", "P", "M1", "D1", "P", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "P", "G3", "M1", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "M1"], ["P", "M1"], ["D1", "P"]], [["S", "R1", "G3", "M1"], ["P", "D1"], ["N3", "S'"]], [["S'", "N3", "D1", "P"], ["M1", "P"], ["G3", "M1"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "10 \u00b7 Dheergam on P, nyaasa G", sub: "Extended holds", laya: "1234 56-12",
-      notes: ["S", "R1", "G3", "M1", "P", "~", "G3", "M1", "P", "~", "P", "~", "G3", "M1", "P", "D1", "N3", "D1", "P", "M1", "G3", "M1", "P", "-", "G3", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "M1"], ["P", "~"], ["G3", "M1"]], [["P", "~"], ["P", "~"]], [["G3", "M1", "P", "D1"], ["N3", "D1"], ["P", "M1"]], [["G3", "M1", "P", "-", "G3"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "11 \u00b7 Dheergams at S, N, D, P", sub: "Multiple dheergam points", laya: "Snd, Ndp, Dpm",
-      notes: ["P", "~", "P", "~", "S'", "~", "N3", "D1", "N3", "~", "D1", "P", "D1", "~", "P", "M1", "P", "~", "P", "~", "G3", "M1", "P", "D1", "N3", "D1", "P", "M1", "G3", "M1", "P", "-", "G3", "M1", "G3", "R1", "S"],
-      dlines: [[["P", "~", "P", "~", "S'", "~", "N3", "D1"], ["N3", "~"], ["D1", "P"]], [["D1", "~", "P", "M1"], ["P", "~"], ["P", "~"]], [["G3", "M1", "P", "D1"], ["N3", "D1"], ["P", "M1"]], [["G3", "M1", "P", "-", "G3"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "12 \u00b7 Janta preview (sphuritam)", sub: "Doubled notes", laya: "SS, nn, dd, pp",
-      notes: ["S'", "S'", "N3", "D1", "N3", "N3", "D1", "P", "D1", "D1", "P", "M1", "P", "~", "P", "~", "G3", "M1", "P", "D1", "N3", "D1", "P", "M1", "G3", "M1", "P", "-", "G3", "M1", "G3", "R1", "S"],
-      dlines: [[["S'", "S'", "N3", "D1"], ["N3", "N3"], ["D1", "P"]], [["D1", "D1", "P", "M1"], ["P", "~"], ["P", "~"]], [["G3", "M1", "P", "D1"], ["N3", "D1"], ["P", "M1"]], [["G3", "M1", "P", "-", "G3"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "13 \u00b7 Zigzag with dheergams", sub: "Dheergam on G, P, D", laya: "srgr G, gmpm P",
-      notes: ["S", "R1", "G3", "R1", "G3", "~", "-", "G3", "M1", "P", "M1", "P", "~", "-", "D1", "P", "D1", "~", "M1", "P", "D1", "P", "D1", "N3", "D1", "P", "M1", "P", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "R1"], ["G3", "~", "-"], ["G3", "M1"]], [["P", "M1", "P", "~", "-"], ["D1", "P"], ["D1", "~"]], [["M1", "P", "D1", "P"], ["D1", "N3"], ["D1", "P"]], [["M1", "P", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] },
-    { title: "14 \u00b7 Dheergam P,S; janta D,M", sub: "Mixed patterns", laya: "",
-      notes: ["S", "R1", "G3", "M1", "P", "~", "P", "~", "D1", "D1", "P", "~", "M1", "M1", "P", "~", "D1", "N3", "S'", "~", "S'", "N3", "D1", "P", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"],
-      dlines: [[["S", "R1", "G3", "M1"], ["P", "~"], ["P", "~"]], [["D1", "D1", "P", "~"], ["M1", "M1"], ["P", "~"]], [["D1", "N3", "S'", "~"], ["S'", "N3"], ["D1", "P"]], [["S'", "N3", "D1", "P"], ["M1", "G3"], ["R1", "S"]]] }
+    { "title": "1 \u00b7 Simple ascent / descent", "sub": "Plain scale up and down", "laya": "1234 5678", "notes": ["S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "2 \u00b7 Focus on R and N", "sub": "Paired R and N phrases", "laya": "12-12-1234 and 1234 5678", "notes": ["S","R1","S","R1","S","R1","G3","M1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","S'","N3","S'","N3","D1","P","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1"],["S","R1"],["S","R1","G3","M1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","S'","N3","S'","N3","D1","P"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "3 \u00b7 Focus on G and D", "sub": "Triplet phrases on G and D", "laya": "123-123-12 and 1234 5678", "notes": ["S","R1","G3","S","R1","G3","S","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","S'","N3","D1","S'","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3"],["S","R1","G3"],["S","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","S'","N3","D1","S'","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "4 \u00b7 Focus on M and P", "sub": "Repeated four-note phrases", "laya": "1234-1234 and 1234 5678", "notes": ["S","R1","G3","M1","S","R1","G3","M1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","S'","N3","D1","P","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["S","R1","G3","M1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P","S'","N3","D1","P"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "5 \u00b7 Focus on P and M (dheergam)", "sub": "Held P and M; R and N", "laya": "1234 56-12 and 1234 5678", "notes": ["S","R1","G3","M1","P","-","S","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","-","S'","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","-"],["S","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1","-"],["S'","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "6 \u00b7 Focus on G and D", "sub": "Return phrases on G and D", "laya": "1234 56-12 and 1234 5678", "notes": ["S","R1","G3","M1","P","D1","S","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","G3","S'","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","D1"],["S","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P","M1","G3","S'","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "7 \u00b7 Focus on N and R (dheergam)", "sub": "Held N and R", "laya": "1234 56-7, and 1234 5678", "notes": ["S","R1","G3","M1","P","D1","N3","-","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","G3","R1","-","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","D1"],["N3","-"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1","G3"],["R1","-"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "8 \u00b7 Zig-zag", "sub": "Zig-zag: P M G R and M P D N", "laya": "1234 -4321 and 1234 5678", "notes": ["S","R1","G3","M1","P","M1","G3","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","P","D1","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","M1","G3","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P","M1","P","D1","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "9 \u00b7 Zig-zag", "sub": "Zig-zag: P M D P and M P G M", "laya": "1234 -4321 and 1234 5678", "notes": ["S","R1","G3","M1","P","M1","D1","P","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","P","G3","M1","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","M1","D1","P"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P","M1","P","G3","M1"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "10 \u00b7 Dheergam on P; rest on G", "sub": "Held P; G-N region; nyaasa on G", "laya": "1234 56-12 and 1,,,1,,, and 1234-4321 and 1234 5678", "notes": ["S","R1","G3","M1","P","-","G3","M1","P","-","-","-","P","-","-","-","G3","M1","P","D1","N3","D1","P","M1","G3","M1","P","G3","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","-"],["G3","M1"]],[["P","-","-","-"],["P","-","-","-"]],[["G3","M1","P","D1"],["N3","D1","P","M1"]],[["G3","M1","P","G3","M1","G3","R1","S"]]] },
+    { "title": "11 \u00b7 Dheergams at S, N, D, P", "sub": "Held S, N, D, P; G-N finishing phrases", "notes": ["S'","-","N3","D1","N3","-","D1","P","D1","-","P","M1","P","-","P","-","G3","M1","P","D1","N3","D1","P","M1","G3","M1","P","G3","M1","G3","R1","S"], "dlines": [[["S'","-","N3","D1"],["N3","-"],["D1","P"]],[["D1","-","P","M1"],["P","-"],["P","-"]],[["G3","M1","P","D1"],["N3","D1"],["P","M1"]],[["G3","M1","P","G3"],["M1","G3"],["R1","S"]]] },
+    { "title": "12 \u00b7 Janta preview (sphuritam)", "sub": "Doubled S, N, D, P; held Pa", "notes": ["S'","S'","N3","D1","N3","N3","D1","P","D1","D1","P","M1","P","-","P","-","G3","M1","P","D1","N3","D1","P","M1","G3","M1","P","G3","M1","G3","R1","S"], "dlines": [[["S'","S'","N3","D1"],["N3","N3"],["D1","P"]],[["D1","D1","P","M1"],["P","-"],["P","-"]],[["G3","M1","P","D1"],["N3","D1"],["P","M1"]],[["G3","M1","P","G3"],["M1","G3"],["R1","S"]]] },
+    { "title": "13 \u00b7 Zig-zag with dheergams", "sub": "Zig-zag; held G, P, D; M-N region", "notes": ["S","R1","G3","R1","G3","-","G3","M1","P","M1","P","-","D1","P","D1","-","M1","P","D1","P","D1","N3","D1","P","M1","P","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","R1"],["G3","-"],["G3","M1"]],[["P","M1","P","-"],["D1","P"],["D1","-"]],[["M1","P","D1","P"],["D1","N3"],["D1","P"]],[["M1","P","D1","P"],["M1","G3"],["R1","S"]]] },
+    { "title": "14 \u00b7 Dheergam at P and S", "sub": "Held P and S; jantas at D and M", "notes": ["S","R1","G3","M1","P","-","P","-","D1","D1","P","-","M1","M1","P","-","D1","N3","S'","-","S'","N3","D1","P","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","-"],["P","-"]],[["D1","D1","P","-"],["M1","M1"],["P","-"]],[["D1","N3","S'","-"],["S'","N3"],["D1","P"]],[["S'","N3","D1","P"],["M1","G3"],["R1","S"]]] },
   ] }
 ,
 {
@@ -431,7 +407,8 @@ function openPattern(i) {
   const li = document.getElementById("layaInfo");
   if (p.laya) {
     const m = p.laya.match(/^(.*) \(([^)]+)\)$/);
-    const slots = m ? m[1] : p.laya, grp = m ? m[2] : "";
+    let slots = m ? m[1] : p.laya; const grp = m ? m[2] : "";
+    if (curLesson.layaNoDash) slots = slots.replace(/[-\u2013]/g, " \u00b7 ");
     li.innerHTML = "<b>Laya " + slots + "</b>" +
       (grp ? " <span>(" + grp + ") \u2014 tala count only</span>" : "");
     li.style.display = "block";
@@ -440,15 +417,18 @@ function openPattern(i) {
   row.innerHTML = "";
   row.classList.toggle("grouped", !!p.dlines);
   const dispTok = s =>
-    s === "-" ? "-" : s === "~" ? "," : swaraLabel(s) + "'".repeat(upOct(s));
+    s === "-" ? "\u00b7" : s === "~" ? "\u2013" : swaraLabel(s) + "'".repeat(upOct(s));
   if (p.dlines) {
+    const barSep = !!curLesson.barSep;
+    const mkSep = () => { const sp = document.createElement("span"); sp.className = "tsep"; sp.textContent = "|"; return sp; };
     p.dlines.forEach(line => {
       const ld = document.createElement("div");
-      ld.className = "talaline";
+      ld.className = "talaline" + (barSep ? " barsep" : "");
+      if (barSep) ld.appendChild(mkSep());
       line.forEach(g => {
         if (g.length === 1 && g[0] === "-") {
           const c = document.createElement("span");
-          c.className = "chip rest"; c.textContent = "-";
+          c.className = "chip rest"; c.textContent = "\u00b7";
           ld.appendChild(c);
         } else {
           const gd = document.createElement("div");
@@ -461,6 +441,7 @@ function openPattern(i) {
           });
           ld.appendChild(gd);
         }
+        if (barSep) ld.appendChild(mkSep());
       });
       row.appendChild(ld);
     });
@@ -469,7 +450,7 @@ function openPattern(i) {
       const c = document.createElement("div");
       const isLo = s[0] === ",";
       c.className = "chip" + (isLo ? " lo" : "") + (isRest(s) ? " rest" : "");
-      c.textContent = isRest(s) ? "-" : swaraLabel(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
+      c.textContent = isRest(s) ? "\u00b7" : swaraLabel(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
       row.appendChild(c);
     });
   }
@@ -585,22 +566,18 @@ function schedulePass(t0opt) {
   // 8x also gets an absolute floor (250ms) so high tempos stay legible.
   const overlap = speed >= 8 ? Math.max(2.0, 0.25 / step)
                 : speed >= 4 ? 1.8 : 0.96;
-  // PDF definitions (Sarali + Janta V2): "-" = silent gap, "~" (dheergam) = extend previous note.
-  // Other lessons: "-" = dheergam = extend previous (legacy behavior).
+  // Dheergam: "," extends the previous note (S , = "Saa"), not silence.
   const soundDurs = notes.map(() => 0);
   const isHold = s => s === "~";
-  const isPdfLesson = curLesson && (curLesson.id === "janta2" || curLesson.id === "sarali");
-  const extendPrev = (i) => {
-    for (let j = i - 1; j >= 0; j--) {
-      if (!isRest(notes[j]) && !isHold(notes[j])) { soundDurs[j] += step; break; }
-    }
-  };
   notes.forEach((s, i) => {
-    if (isHold(s)) {
-      extendPrev(i); // dheergam: hold the previous note (PDF)
-    } else if (isRest(s)) {
-      if (!isPdfLesson) extendPrev(i); // legacy: "-" = dheergam in other lessons
-      // PDF lessons: "-" = silent gap, do not extend
+    if (isRest(s)) {
+      {
+        for (let j = i - 1; j >= 0; j--) {
+          if (!isRest(notes[j]) && !isHold(notes[j])) { soundDurs[j] += step; break; }
+        }
+      }
+    } else if (isHold(s)) {
+      // Janta V2 (2026-10-09): holds are silent skips, do not extend previous
     } else {
       soundDurs[i] = step;
     }
