@@ -71,7 +71,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 .layabox { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
 .layabox b { color: var(--text); }
 .talaline { display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px; }
-.tgroup { flex: 1 1 0; display: flex; gap: 2px; background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
+.tgroup { display: flex; gap: 2px; background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
 .tgroup .chip { flex: 1 1 0; border: 0; background: transparent; padding: 7px 2px; }
 .talaline > .chip { flex: none; align-self: center; }
 .tgroup .chip.playing { background: var(--accent); border-radius: 6px; }
@@ -428,11 +428,13 @@ function openPattern(i) {
       line.forEach(g => {
         if (g.length === 1 && (g[0] === "-" || g[0] === ",")) {
           const c = document.createElement("span");
-          c.className = "chip rest"; c.textContent = g[0] === "," ? "," : "\u00b7";
+          c.className = "chip rest"; c.textContent = g[0];
+          c.style.flex = "1 1 0"; // single gap counts as 1 unit
           ld.appendChild(c);
         } else {
           const gd = document.createElement("div");
           gd.className = "tgroup";
+          gd.style.flex = `${g.length} ${g.length} 0`; // proportional to chip count = equal chip sizes
           g.forEach(tok => {
             const c = document.createElement("span");
             c.className = "chip" + (tok === "-" || tok === "," ? " rest" : tok === "~" ? " hold" : "");
