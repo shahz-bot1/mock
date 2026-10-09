@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Varisai Studio</title>
+<style>
+:root, [data-theme="dark"] {
+  --bg: #101318; --panel: #171c24; --panel2: #1f2631;
+  --text: #e8ecf2; --muted: #9aa4b2; --border: #2a323e;
+  --accent: #5b9dff; --accent-soft: rgba(91,157,255,.16);
+}
+[data-theme="light"] {
+  --bg: #f4f6f9; --panel: #ffffff; --panel2: #eef1f5;
+  --text: #1b2330; --muted: #5d6b7d; --border: #dde3ea;
+  --accent: #2f6fe4; --accent-soft: rgba(47,111,228,.12);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, "SF Pro Text", sans-serif; padding: 12px; padding-bottom: 40px; }
+header { display: flex; align-items: center; gap: 10px; margin: 4px 2px 14px; }
+header h1 { margin: 0; font-size: 22px; flex: 1; }
+header h1 span { color: var(--accent); }
+header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
+.tbtn { border: 1px solid var(--border); background: var(--panel); color: var(--text);
+  border-radius: 10px; padding: 8px 12px; font-size: 13px; }
+.card { background: var(--panel); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+.card h2 { margin: 0 0 4px; font-size: 17px; }
+.card .sub { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+.lesson { display: flex; align-items: center; gap: 12px; padding: 13px 4px;
+  border-bottom: 1px solid var(--border); cursor: pointer; }
+.lesson:last-child { border-bottom: 0; }
+.lesson .n { width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft);
+  color: var(--accent); font-weight: 700; display: flex; align-items: center;
+  justify-content: center; font-size: 14px; flex: none; }
+.lesson .t { flex: 1; min-width: 0; }
+.lesson .t b { display: block; font-size: 15px; }
+.lesson .t small { color: var(--muted); font-size: 12px; display: block;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lesson .chev { color: var(--muted); font-size: 20px; flex: none; }
+.lesson.cur .n { background: var(--accent); color: #fff; }
+.backbtn { border: 0; background: none; color: var(--accent); font-size: 15px;
+  padding: 4px 0 12px; cursor: pointer; }
+.swararow { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.chip { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; font-size: 15px; font-weight: 600; min-width: 44px; text-align: center;
+  transition: background .08s; }
+.chip.playing { background: var(--accent); border-color: var(--accent); color: #fff; }
+.sarow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.sarow label { font-size: 13.5px; color: var(--muted); flex: none; min-width: 44px; }
+.saseg { display: flex; flex-wrap: wrap; background: var(--panel2);
+  border: 1px solid var(--border); border-radius: 10px; padding: 2px; flex: 1; min-width: 0; }
+.saseg button { flex: 1 1 15%; min-width: 0; border: 0; background: transparent;
+  color: var(--muted); font-size: 12.5px; padding: 6px 2px; border-radius: 7px; cursor: pointer; }
+.saseg button.on { background: var(--accent); color: #fff; font-weight: 700; }
+.sliderow { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.sliderow label { font-size: 13.5px; color: var(--muted); flex: none; min-width: 44px; }
+.sliderow input[type=range] { flex: 1; accent-color: var(--accent); }
+.sliderow span { font-size: 13px; color: var(--muted); min-width: 64px; text-align: right; }
+.bigplay { width: 100%; border: 0; border-radius: 12px; background: var(--accent);
+  color: #fff; font-size: 16px; font-weight: 700; padding: 14px; cursor: pointer; }
+.bigplay.playing { background: #e05252; }
+.playrow { display: flex; gap: 10px; margin-top: 10px; }
+.loopbtn { flex: 1; border: 1px solid var(--border); background: var(--panel2);
+  color: var(--muted); border-radius: 12px; font-size: 14px; padding: 12px; cursor: pointer; }
+.loopbtn.on { color: var(--accent); border-color: var(--accent); font-weight: 700; }
+.loopbtn:disabled { opacity: .45; cursor: default; }
+.view { display: none; } .view.on { display: block; }
+.note { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; }
+.foot { text-align: center; font-size: 11.5px; color: var(--muted); margin-top: 18px; }
+</style>
+</head>
+<body>
+
+<!-- ============ LIST VIEW ============ -->
+<div class="view on" id="v-list">
+  <header>
+    <div style="flex:1"><h1>Varisai <span>Studio</span></h1>
+    <p>Structured Carnatic practice exercises</p></div>
+    <button class="tbtn" id="themeBtn">◐ Theme</button>
+  </header>
+  <section class="card">
+    <h2>Lessons</h2>
+    <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
+    <div id="lessonList"></div>
+  </section>
+  <p class="foot">Varisai Studio v1 · harmonium · 🔇 no sound on iPhone? turn off silent mode</p>
+</div>
+
+<!-- ============ PLAYER VIEW ============ -->
+<div class="view" id="v-player">
+  <button class="backbtn" id="backBtn">‹ Lessons</button>
+  <section class="card">
+    <h2 id="pTitle">—</h2>
+    <p class="sub" id="pSub">—</p>
+    <div class="swararow" id="swaras"></div>
+    <div class="sarow">
+      <label>Sa</label>
+      <div class="saseg" id="saSeg"></div>
+    </div>
+    <div class="sliderow">
+      <label>Tempo</label>
+      <input type="range" id="tempoSlider" min="30" max="240" step="10" value="90">
+      <span id="tempoVal">90 BPM</span>
+    </div>
+    <div class="sarow">
+      <label>Speed</label>
+      <div class="saseg" id="spdSeg" style="flex-wrap:nowrap"></div>
+    </div>
+    <button class="bigplay" id="playBtn">▶ Play pattern</button>
+    <div class="playrow">
+      <button class="loopbtn on" id="loopBtn">🔁 Loop</button>
+      <button class="loopbtn" id="singBtn" disabled>🎤 Sing back (soon)</button>
+    </div>
+    <p class="note" id="audioStatus">Audio loads on first play.</p>
+  </section>
+  <section class="card">
+    <h2>Patterns</h2>
+    <p class="sub" id="patCount">—</p>
+    <div id="patList"></div>
+  </section>
+</div>
+
+<script>
+"use strict";
+
+/* ================= LESSON DATA =================
+   Mayamalavagowla: S R1 G3 M1 P D1 N3. "'" = upper octave, "''" = two octaves up.
+   Keep arrays editable — titles/subs are display-only. */
+const LESSONS = [
+{
+  id: "sarali", name: "Sarali Varisai", num: 1,
+  desc: "14 patterns · straight swara sequences", raga: "Mayamalavagowla",
+  patterns: [
+    { title: "1 · Ascent", sub: "Straight arohana", notes: ["S","R1","G3","M1","P","D1","N3","S'"] },
+    { title: "2 · Descent", sub: "Straight avarohana", notes: ["S'","N3","D1","P","M1","G3","R1","S"] },
+    { title: "3 · Threes up", sub: "3-note groups ascending", notes: ["S","R1","G3","R1","G3","M1","G3","M1","P","M1","P","D1","P","D1","N3","D1","N3","S'"] },
+    { title: "4 · Threes down", sub: "3-note groups descending", notes: ["S'","N3","D1","N3","D1","P","D1","P","M1","P","M1","G3","M1","G3","R1","G3","R1","S"] },
+    { title: "5 · Fours up", sub: "4-note groups ascending", notes: ["S","R1","G3","M1","R1","G3","M1","P","G3","M1","P","D1","M1","P","D1","N3","P","D1","N3","S'"] },
+    { title: "6 · Fours down", sub: "4-note groups descending", notes: ["S'","N3","D1","P","N3","D1","P","M1","D1","P","M1","G3","P","M1","G3","R1","M1","G3","R1","S"] },
+    { title: "7 · Full cycle", sub: "Ascent + descent", notes: ["S","R1","G3","M1","P","D1","N3","S'","N3","D1","P","M1","G3","R1","S"] },
+    { title: "8 · Twos up", sub: "2-note groups ascending", notes: ["S","R1","R1","G3","G3","M1","M1","P","P","D1","D1","N3","N3","S'"] },
+    { title: "9 · Twos down", sub: "2-note groups descending", notes: ["S'","N3","N3","D1","D1","P","P","M1","M1","G3","G3","R1","R1","S"] },
+    { title: "10 · Fives up", sub: "5-note groups ascending", notes: ["S","R1","G3","M1","P","R1","G3","M1","P","D1","G3","M1","P","D1","N3","M1","P","D1","N3","S'"] },
+    { title: "11 · Fives down", sub: "5-note groups descending", notes: ["S'","N3","D1","P","M1","N3","D1","P","M1","G3","D1","P","M1","G3","R1","P","M1","G3","R1","S"] },
+    { title: "12 · Sevens up", sub: "7-note groups ascending", notes: ["S","R1","G3","M1","P","D1","N3","R1","G3","M1","P","D1","N3","S'"] },
+    { title: "13 · Sevens down", sub: "7-note groups descending", notes: ["S'","N3","D1","P","M1","G3","R1","N3","D1","P","M1","G3","R1","S"] },
+    { title: "14 · Double cycle", sub: "Up–down twice through", notes: ["S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","G3","R1","S"] },
+  ]
+},
+{
+  id: "janta", name: "Janta Varisai", num: 2,
+  desc: "10 patterns · double-note (janta) sequences", raga: "Mayamalavagowla",
+  patterns: [
+    { title: "1 · Doubles up", sub: "Each swara twice, ascending", notes: ["S","S","R1","R1","G3","G3","M1","M1","P","P","D1","D1","N3","N3","S'","S'"] },
+    { title: "2 · Doubles down", sub: "Each swara twice, descending", notes: ["S'","S'","N3","N3","D1","D1","P","P","M1","M1","G3","G3","R1","R1","S","S"] },
+    { title: "3 · Janta threes up", notes: ["S","S","R1","R1","G3","G3","R1","R1","G3","G3","M1","M1","G3","G3","M1","M1","P","P","M1","M1","P","P","D1","D1","P","P","D1","D1","N3","N3","D1","D1","N3","N3","S'","S'"] },
+    { title: "4 · Janta threes down", notes: ["S'","S'","N3","N3","D1","D1","N3","N3","D1","D1","P","P","D1","D1","P","P","M1","M1","P","P","M1","M1","G3","G3","M1","M1","G3","G3","R1","R1","G3","G3","R1","R1","S","S"] },
+    { title: "5 · Janta fours up", notes: ["S","S","R1","R1","G3","G3","M1","M1","R1","R1","G3","G3","M1","M1","P","P","G3","G3","M1","M1","P","P","D1","D1","M1","M1","P","P","D1","D1","N3","N3","P","P","D1","D1","N3","N3","S'","S'"] },
+    { title: "6 · Janta fours down", notes: ["S'","S'","N3","N3","D1","D1","P","P","N3","N3","D1","D1","P","P","M1","M1","D1","D1","P","P","M1","M1","G3","G3","P","P","M1","M1","G3","G3","R1","R1","M1","M1","G3","G3","R1","R1","S","S"] },
+    { title: "7 · Full janta cycle", sub: "Up then down", notes: ["S","S","R1","R1","G3","G3","M1","M1","P","P","D1","D1","N3","N3","S'","S'","N3","N3","D1","D1","P","P","M1","M1","G3","G3","R1","R1","S","S"] },
+    { title: "8 · Mixed doubles up", sub: "Single–double alternation", notes: ["S","R1","R1","G3","R1","G3","G3","M1","G3","M1","M1","P","M1","P","P","D1","P","D1","D1","N3","D1","N3","N3","S'"] },
+    { title: "9 · Mixed doubles down", sub: "Single–double alternation", notes: ["S'","N3","N3","D1","N3","D1","D1","P","D1","P","P","M1","P","M1","M1","G3","M1","G3","G3","R1","G3","R1","R1","S"] },
+    { title: "10 · Janta sprint", sub: "Doubles, steady flow", notes: ["S","S","R1","R1","G3","G3","M1","M1","P","P","D1","D1","N3","N3","S'","S'","S'","S'"] },
+  ]
+},
+{
+  id: "dhattu", name: "Dhattu Varisai", num: 3,
+  desc: "10 patterns · jumping (dhattu) sequences", raga: "Mayamalavagowla",
+  patterns: [
+    { title: "1 · Third jumps up", sub: "Skip one swara", notes: ["S","M1","R1","G3","G3","P","M1","D1","P","N3","D1","S'"] },
+    { title: "2 · Third jumps down", sub: "Skip one swara", notes: ["S'","D1","N3","P","D1","M1","P","G3","M1","R1","G3","S"] },
+    { title: "3 · Fifth jumps up", sub: "Skip three swaras", notes: ["S","P","R1","D1","G3","N3","M1","S'"] },
+    { title: "4 · Fifth jumps down", sub: "Skip three swaras", notes: ["S'","M1","N3","G3","D1","R1","P","S"] },
+    { title: "5 · Skip-one pairs up", notes: ["S","G3","R1","M1","G3","P","M1","D1","P","N3","D1","S'"] },
+    { title: "6 · Skip-one pairs down", notes: ["S'","D1","N3","P","D1","M1","P","G3","M1","R1","G3","S"] },
+    { title: "7 · Zigzag up", sub: "Up two, back one", notes: ["S","M1","P","R1","P","D1","G3","D1","N3","M1","N3","S'"] },
+    { title: "8 · Zigzag down", sub: "Down two, back one", notes: ["S'","N3","D1","P","D1","M1","P","G3","M1","R1","G3","S"] },
+    { title: "9 · Wide leaps up", notes: ["S","D1","R1","N3","G3","S'","M1","S'"] },
+    { title: "10 · Wide leaps down", notes: ["S'","M1","S'","G3","N3","R1","D1","S"] },
+  ]
+},
+{
+  id: "alankaram", name: "Sapta Tala Alankarams", num: 4,
+  desc: "7 alankarams · one per tala", raga: "Mayamalavagowla",
+  patterns: [
+    { title: "Dhruva", sub: "14 aksharas · laghu–dhrutam–laghu–laghu", notes: ["S","R1","G3","M1","P","D1","N3","S'","R1","G3","M1","P","D1","N3"] },
+    { title: "Matya", sub: "10 aksharas · laghu–dhrutam–laghu", notes: ["S","R1","G3","M1","P","D1","N3","S'","R1","G3"] },
+    { title: "Rupaka", sub: "6 aksharas · dhrutam–laghu", notes: ["S","R1","G3","M1","P","D1"] },
+    { title: "Jhampa", sub: "10 aksharas · laghu–anudhrutam–dhrutam", notes: ["S","R1","G3","M1","P","D1","N3","S'","N3","D1"] },
+    { title: "Triputa", sub: "7 aksharas · laghu–dhrutam–dhrutam", notes: ["S","R1","G3","M1","P","D1","N3"] },
+    { title: "Ata", sub: "14 aksharas · laghu–laghu–dhrutam–dhrutam", notes: ["S","R1","G3","M1","P","D1","N3","S'","N3","D1","P","M1","G3","R1"] },
+    { title: "Eka", sub: "4 aksharas · single laghu", notes: ["S","R1","G3","M1"] },
+  ]
+},
+{
+  id: "madhya", name: "Madhya Sthayi Varisai", num: 5,
+  desc: "8 patterns · middle octave sequences", raga: "Mayamalavagowla",
+  patterns: [
+    { title: "1 · Ascent", notes: ["P","D1","N3","S'","R1'","G3'","M1'","P'"] },
+    { title: "2 · Descent", notes: ["P'","M1'","G3'","R1'","S'","N3","D1","P"] },
+    { title: "3 · Threes up", notes: ["P","D1","N3","D1","N3","S'","N3","S'","R1'","S'","R1'","G3'","R1'","G3'","M1'","G3'","M1'","P'"] },
+    { title: "4 · Threes down", notes: ["P'","M1'","G3'","M1'","G3'","R1'","G3'","R1'","S'","R1'","S'","N3","S'","N3","D1","N3","D1","P"] },
+    { title: "5 · Full cycle", notes: ["P","D1","N3","S'","R1'","G3'","M1'","P'","M1'","G3'","R1'","S'","N3","D1","P"] },
+    { title: "6 · Janta", sub: "Doubles in madhya sthayi", notes: ["P","P","D1","D1","N3","N3","S'","S'","R1'","R1'","G3'","G3'","M1'","M1'","P'","P'"] },
+    { title: "7 · Dhattu", sub: "Jumps in madhya sthayi", notes: ["P","N3","D1","S'","N3","R1'","S'","G3'","R1'","M1'","G3'","P'"] },
+    { title: "8 · Sprint", notes: ["P","D1","N3","S'","R1'","G3'","M1'","P'","P'"] },
+  ]
+},
+{
+  id: "mel", name: "Mel Sthayi Varisai", num: 6,
+  desc: "8 patterns · upper octave sequences", raga: "Mayamalavagowla",
+  patterns: [
+    { title: "1 · Ascent", notes: ["S'","R1'","G3'","M1'","P'","D1'","N3'","S''"] },
+    { title: "2 · Descent", notes: ["S''","N3'","D1'","P'","M1'","G3'","R1'","S'"] },
+    { title: "3 · Threes up", notes: ["S'","R1'","G3'","R1'","G3'","M1'","G3'","M1'","P'","M1'","P'","D1'","P'","D1'","N3'","D1'","N3'","S''"] },
+    { title: "4 · Threes down", notes: ["S''","N3'","D1'","N3'","D1'","P'","D1'","P'","M1'","P'","M1'","G3'","M1'","G3'","R1'","G3'","R1'","S'"] },
+    { title: "5 · Full cycle", notes: ["S'","R1'","G3'","M1'","P'","D1'","N3'","S''","N3'","D1'","P'","M1'","G3'","R1'","S'"] },
+    { title: "6 · Janta", sub: "Doubles in mel sthayi", notes: ["S'","S'","R1'","R1'","G3'","G3'","M1'","M1'","P'","P'","D1'","D1'","N3'","N3'","S''","S''"] },
+    { title: "7 · Dhattu", sub: "Jumps in mel sthayi", notes: ["S'","M1'","R1'","G3'","G3'","P'","M1'","D1'","P'","N3'","D1'","S''"] },
+    { title: "8 · Sprint", notes: ["S'","R1'","G3'","M1'","P'","D1'","N3'","S''","S''"] },
+  ]
+}
+];
+
+/* ================= STATE ================= */
+const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
+               P:7, D1:8, D2:9, D3:10, N1:9, N2:10, N3:11 };
+const norm = s => s.replace(/'/g, "");
+const upOct = s => (s.match(/'/g) || []).length;
+const SA_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+
+let curLesson = null, patIdx = 0;
+let saOffset = 0, tempo = 90, speed = 2, loopOn = true;
+try {
+  const v = localStorage.getItem("varisai-sa");       if (v !== null && +v >= 0 && +v < 12) saOffset = +v;
+  const t = localStorage.getItem("varisai-tempo");    if (t !== null && +t >= 30 && +t <= 240) tempo = +t;
+  const s = localStorage.getItem("varisai-speed");    if (["1","2","4","8"].includes(s)) speed = +s;
+} catch (e) {}
+const save = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+/* ================= THEME ================= */
+const applyTheme = th => { document.documentElement.dataset.theme = th; save("varisai-theme", th); };
+let savedTh = null;
+try { savedTh = localStorage.getItem("varisai-theme"); } catch (e) {}
+applyTheme(savedTh || "dark");
+document.getElementById("themeBtn").onclick = () =>
+  applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+
+/* ================= LIST VIEW ================= */
+const listEl = document.getElementById("lessonList");
+LESSONS.forEach(L => {
+  const d = document.createElement("div");
+  d.className = "lesson";
+  d.innerHTML = `<div class="n">${L.num}</div><div class="t"><b>${L.name}</b><small>${L.desc}</small></div><div class="chev">›</div>`;
+  d.onclick = () => openLesson(L.id);
+  listEl.appendChild(d);
+});
+
+/* ================= PLAYER VIEW ================= */
+const saSeg = document.getElementById("saSeg");
+SA_NAMES.forEach((nm, i) => {
+  const b = document.createElement("button");
+  b.textContent = nm;
+  b.classList.toggle("on", i === saOffset);
+  b.onclick = () => { stopPlayback(); saOffset = i; save("varisai-sa", i);
+    saSeg.querySelectorAll("button").forEach((x, xi) => x.classList.toggle("on", xi === i)); };
+  saSeg.appendChild(b);
+});
+
+const tempoSlider = document.getElementById("tempoSlider");
+const tempoVal = document.getElementById("tempoVal");
+tempoSlider.value = tempo; tempoVal.textContent = tempo + " BPM";
+tempoSlider.oninput = () => { tempo = +tempoSlider.value;
+  tempoVal.textContent = tempo + " BPM"; save("varisai-tempo", tempo); };
+
+const spdSeg = document.getElementById("spdSeg");
+[1, 2, 4, 8].forEach(n => {
+  const b = document.createElement("button");
+  b.textContent = n === 1 ? "1 /beat" : String(n);
+  b.style.flex = "1 1 0";
+  b.classList.toggle("on", n === speed);
+  b.onclick = () => { speed = n; save("varisai-speed", n);
+    spdSeg.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); };
+  spdSeg.appendChild(b);
+});
+
+const loopBtn = document.getElementById("loopBtn");
+loopBtn.classList.toggle("on", loopOn);
+loopBtn.onclick = () => { loopOn = !loopOn; loopBtn.classList.toggle("on", loopOn); };
+
+function openLesson(id) {
+  stopPlayback();
+  curLesson = LESSONS.find(L => L.id === id);
+  patIdx = 0;
+  document.getElementById("v-list").classList.remove("on");
+  document.getElementById("v-player").classList.add("on");
+  window.scrollTo(0, 0);
+  renderPatternList();
+  openPattern(0);
+}
+function renderPatternList() {
+  const pl = document.getElementById("patList");
+  pl.innerHTML = "";
+  document.getElementById("patCount").textContent =
+    curLesson.patterns.length + " in this lesson · " + curLesson.raga;
+  curLesson.patterns.forEach((p, i) => {
+    const d = document.createElement("div");
+    d.className = "lesson" + (i === patIdx ? " cur" : "");
+    const preview = p.notes.slice(0, 8).join(" ") + (p.notes.length > 8 ? " …" : "");
+    d.innerHTML = `<div class="n">${i + 1}</div><div class="t"><b>${p.title}</b><small>${preview}</small></div><div class="chev">›</div>`;
+    d.onclick = () => openPattern(i);
+    pl.appendChild(d);
+  });
+}
+function openPattern(i) {
+  stopPlayback();
+  patIdx = i;
+  const p = curLesson.patterns[i];
+  document.getElementById("pTitle").textContent = curLesson.name + " · " + (i + 1);
+  document.getElementById("pSub").textContent =
+    (p.sub ? p.sub + " · " : "") + curLesson.raga + " · " + p.notes.length + " swaras";
+  const row = document.getElementById("swaras");
+  row.innerHTML = "";
+  p.notes.forEach(s => {
+    const c = document.createElement("div");
+    c.className = "chip"; c.textContent = s;
+    row.appendChild(c);
+  });
+  renderPatternList();
+  window.scrollTo(0, 0);
+}
+document.getElementById("backBtn").onclick = () => {
+  stopPlayback();
+  document.getElementById("v-player").classList.remove("on");
+  document.getElementById("v-list").classList.add("on");
+  window.scrollTo(0, 0);
+};
+
+/* ================= AUDIO ================= */
+let actx = null, playTimer = null, playing = false, activeNodes = [];
+function ensureAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === "suspended") actx.resume();
+}
+const FILE_NAMES = ["C","Cs","D","Ds","E","F","Fs","G","Gs","A","As","B"];
+const SAMPLE_SET = {
+  base: "samples/harmonium/",
+  files: ["C4","Cs4","D4","Ds4","E4","F4","G4","Gs4","A4","As4","B4","C5"].map(f => f + ".mp3"),
+  map: (s) => {
+    const semi = SEMI[norm(s)] + upOct(s) * 12 + saOffset; // semitones above C4
+    const baseSemi = ((semi % 12) + 12) % 12;
+    const oct = 4 + Math.floor(semi / 12);
+    let file = FILE_NAMES[baseSemi] + oct + ".mp3";
+    let rate = 1;
+    const avail = [0,1,2,3,4,5,7,8,9,10,11,12]; // C4..C5 minus Fs4
+    if (!avail.includes(semi) || file === "Fs4.mp3") {
+      let best = avail[0], bestD = 99;
+      avail.forEach(a => { const d = Math.abs(a - semi); if (d < bestD) { bestD = d; best = a; } });
+      file = FILE_NAMES[best % 12] + (4 + Math.floor(best / 12)) + ".mp3";
+      rate = Math.pow(2, (semi - best) / 12);
+    }
+    if (file === "Fs4.mp3") { file = "F4.mp3"; rate = Math.pow(2, 1 / 12); }
+    return { file, rate };
+  }
+};
+const sampleBufs = {};
+let samplesPromise = null;
+function ensureSamples() {
+  if (!samplesPromise) {
+    samplesPromise = (async () => {
+      await Promise.all(SAMPLE_SET.files.map(async f => {
+        const key = "harmonium/" + f;
+        if (sampleBufs[key]) return;
+        const res = await fetch(SAMPLE_SET.base + f);
+        if (!res.ok) throw new Error("sample " + f);
+        sampleBufs[key] = await actx.decodeAudioData(await res.arrayBuffer());
+      }));
+    })();
+  }
+  return samplesPromise;
+}
+function playSampledNote(t, swara, dur) {
+  const { file, rate } = SAMPLE_SET.map(swara);
+  const buf = sampleBufs["harmonium/" + file];
+  if (!buf) return false;
+  const src = actx.createBufferSource();
+  src.buffer = buf; src.playbackRate.value = rate;
+  const g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.9, t + 0.02);
+  g.gain.setValueAtTime(0.9, t + Math.max(0.02, dur - 0.12));
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.15);
+  src.connect(g); g.connect(actx.destination);
+  src.start(t); src.stop(t + dur + 0.2);
+  activeNodes.push(src);
+  return true;
+}
+// minimal synth fallback if samples fail to load
+function playSynthNote(t, swara, dur) {
+  const semi = SEMI[norm(swara)] + upOct(swara) * 12 + saOffset;
+  const f = 261.63 * Math.pow(2, semi / 12);
+  const o = actx.createOscillator(); o.type = "triangle"; o.frequency.value = f;
+  const g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.4, t + 0.03);
+  g.gain.setValueAtTime(0.4, t + Math.max(0.03, dur - 0.09));
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.12);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur + 0.15);
+  activeNodes.push(o);
+}
+
+/* ================= PLAYBACK ================= */
+const playBtn = document.getElementById("playBtn");
+const audioStatus = document.getElementById("audioStatus");
+function clearChips() {
+  document.querySelectorAll("#swaras .chip.playing").forEach(x => x.classList.remove("playing"));
+}
+function stopPlayback() {
+  playing = false;
+  if (playTimer) { playTimer.forEach(clearTimeout); playTimer = null; }
+  activeNodes.forEach(n => { try { n.stop(); } catch (e) {} });
+  activeNodes = [];
+  clearChips();
+  playBtn.textContent = "▶ Play pattern";
+  playBtn.classList.remove("playing");
+}
+function schedulePass() {
+  const notes = curLesson.patterns[patIdx].notes;
+  const step = (60 / tempo) / speed; // seconds per swara
+  const t0 = actx.currentTime + 0.08;
+  const chips = [...document.getElementById("swaras").children];
+  notes.forEach((s, i) => {
+    const played = playSampledNote(t0 + i * step, s, step * 0.96);
+    if (!played) playSynthNote(t0 + i * step, s, step * 0.96);
+    playTimer.push(setTimeout(() => {
+      if (!playing) return;
+      clearChips();
+      if (chips[i]) chips[i].classList.add("playing");
+    }, Math.max(0, (t0 + i * step - actx.currentTime) * 1000)));
+  });
+  const totalMs = (t0 + notes.length * step - actx.currentTime) * 1000 + 250;
+  playTimer.push(setTimeout(() => {
+    if (!playing) return;
+    if (loopOn && curLesson) schedulePass();
+    else stopPlayback();
+  }, Math.max(0, totalMs)));
+}
+playBtn.onclick = async () => {
+  if (playing) { stopPlayback(); return; }
+  if (!curLesson) return;
+  ensureAudio();
+  if (actx.state === "suspended") { try { await actx.resume(); } catch (e) {} }
+  playBtn.textContent = "⏳ Loading…";
+  try { await ensureSamples(); audioStatus.textContent = "Harmonium samples loaded."; }
+  catch (e) { audioStatus.textContent = "Samples unavailable — using synth fallback."; }
+  playing = true; playTimer = [];
+  playBtn.textContent = "■ Stop";
+  playBtn.classList.add("playing");
+  schedulePass();
+};
+document.addEventListener("visibilitychange", () => { if (document.hidden) stopPlayback(); });
+</script>
+</body>
+</html>
