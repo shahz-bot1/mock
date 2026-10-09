@@ -96,7 +96,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
     <div id="lessonList"></div>
   </section>
-  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-14 · 🔇 no sound on iPhone? turn off silent mode</p>
+  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-15 · 🔇 no sound on iPhone? turn off silent mode</p>
 </div>
 
 <!-- ============ PLAYER VIEW ============ -->
@@ -420,7 +420,7 @@ function openPattern(i) {
       line.forEach(g => {
         if (g.length === 1 && (g[0] === "-" || g[0] === ",")) {
           const c = document.createElement("span");
-          c.className = "chip rest"; c.textContent = g[0] === "," ? "," : "\u00b7";
+          c.className = "chip rest"; c.textContent = g[0];
           c.style.flex = "1 1 0";
           ld.appendChild(c);
         } else {
@@ -443,7 +443,7 @@ function openPattern(i) {
       const c = document.createElement("div");
       const isLo = s[0] === ",";
       c.className = "chip" + (isLo ? " lo" : "") + (isRest(s) ? " rest" : "");
-      c.textContent = isRest(s) ? "\u00b7" : swaraLabel(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
+      c.textContent = isRest(s) ? s : swaraLabel(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
       row.appendChild(c);
     });
   }
