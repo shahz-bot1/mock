@@ -440,10 +440,10 @@ function stopPlayback() {
   playBtn.textContent = "▶ Play pattern";
   playBtn.classList.remove("playing");
 }
-function schedulePass() {
+function schedulePass(t0opt) {
   const notes = curLesson.patterns[patIdx].notes;
   const step = (60 / tempo) / speed; // seconds per swara
-  const t0 = actx.currentTime + 0.08;
+  const t0 = t0opt || actx.currentTime + 0.08;
   const chips = [...document.getElementById("swaras").children];
   // Overlap (legato): at 4x/8x each note rings past its slot so the
   // harmonium attack is audible; attacks stay on the grid.
@@ -460,10 +460,12 @@ function schedulePass() {
       if (chips[i]) chips[i].classList.add("playing");
     }, Math.max(0, (t0 + i * step - actx.currentTime) * 1000)));
   });
-  const totalMs = (t0 + notes.length * step - actx.currentTime) * 1000 + 250;
+  // Seamless loop: next pass starts exactly one step after the last note.
+  const nextT0 = t0 + notes.length * step;
+  const totalMs = (nextT0 - actx.currentTime) * 1000 - 60; // fire slightly early to schedule in time
   playTimer.push(setTimeout(() => {
     if (!playing) return;
-    if (loopOn && curLesson) schedulePass();
+    if (loopOn && curLesson) schedulePass(nextT0);
     else stopPlayback();
   }, Math.max(0, totalMs)));
 }
