@@ -569,9 +569,7 @@ function schedulePass(t0opt) {
         }
       }
     } else if (isHold(s)) {
-      for (let j = i - 1; j >= 0; j--) {
-        if (!isRest(notes[j]) && !isHold(notes[j])) { soundDurs[j] += step; break; }
-      }
+      // Janta V2 (2026-10-09): holds are silent skips, do not extend previous
     } else {
       soundDurs[i] = step;
     }
