@@ -577,7 +577,7 @@ function schedulePass(t0opt) {
     }
   });
   notes.forEach((s, i) => {
-    if (!isRest(s)) {
+    if (!isRest(s) && !isHold(s)) {
       const sndDur = Math.max(soundDurs[i] * 0.96, step * overlap);
       const played = playSampledNote(t0 + i * step, s, sndDur);
       if (!played) playSynthNote(t0 + i * step, s, sndDur);
