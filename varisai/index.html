@@ -557,18 +557,22 @@ function schedulePass(t0opt) {
   // 8x also gets an absolute floor (250ms) so high tempos stay legible.
   const overlap = speed >= 8 ? Math.max(2.0, 0.25 / step)
                 : speed >= 4 ? 1.8 : 0.96;
-  // Dheergam: "," extends the previous note (S , = "Saa"), not silence.
+  // PDF definitions (Janta V2): "-" = silent gap, "~" (dheergam) = extend previous note.
+  // Other lessons: "-" = dheergam = extend previous (legacy behavior).
   const soundDurs = notes.map(() => 0);
   const isHold = s => s === "~";
+  const isJanta2 = curLesson && curLesson.id === "janta2";
+  const extendPrev = (i) => {
+    for (let j = i - 1; j >= 0; j--) {
+      if (!isRest(notes[j]) && !isHold(notes[j])) { soundDurs[j] += step; break; }
+    }
+  };
   notes.forEach((s, i) => {
-    if (isRest(s)) {
-      {
-        for (let j = i - 1; j >= 0; j--) {
-          if (!isRest(notes[j]) && !isHold(notes[j])) { soundDurs[j] += step; break; }
-        }
-      }
-    } else if (isHold(s)) {
-      // Janta V2 (2026-10-09): holds are silent skips, do not extend previous
+    if (isHold(s)) {
+      extendPrev(i); // dheergam: hold the previous note (PDF)
+    } else if (isRest(s)) {
+      if (!isJanta2) extendPrev(i); // legacy: "-" = dheergam in other lessons
+      // Janta V2: "-" = silent gap, do not extend
     } else {
       soundDurs[i] = step;
     }
