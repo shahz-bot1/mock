@@ -268,7 +268,7 @@ SA_NAMES.forEach((nm, i) => {
   const b = document.createElement("button");
   b.textContent = nm;
   b.classList.toggle("on", i === saOffset);
-  b.onclick = () => { stopPlayback(); saOffset = i; save("varisai-sa", i);
+  b.onclick = () => { saOffset = i; save("varisai-sa", i); restartIfPlaying();
     saSeg.querySelectorAll("button").forEach((x, xi) => x.classList.toggle("on", xi === i)); };
   saSeg.appendChild(b);
 });
@@ -276,8 +276,11 @@ SA_NAMES.forEach((nm, i) => {
 const tempoSlider = document.getElementById("tempoSlider");
 const tempoVal = document.getElementById("tempoVal");
 tempoSlider.value = tempo; tempoVal.textContent = tempo + " BPM";
+let tempoRestartT = null;
 tempoSlider.oninput = () => { tempo = +tempoSlider.value;
-  tempoVal.textContent = tempo + " BPM"; save("varisai-tempo", tempo); };
+  tempoVal.textContent = tempo + " BPM"; save("varisai-tempo", tempo);
+  clearTimeout(tempoRestartT);
+  tempoRestartT = setTimeout(() => restartIfPlaying(), 350); };
 
 const spdSeg = document.getElementById("spdSeg");
 [1, 2, 4, 8].forEach(n => {
@@ -286,7 +289,8 @@ const spdSeg = document.getElementById("spdSeg");
   b.style.flex = "1 1 0";
   b.classList.toggle("on", n === speed);
   b.onclick = () => { speed = n; save("varisai-speed", n);
-    spdSeg.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); };
+    spdSeg.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    restartIfPlaying(); };
   spdSeg.appendChild(b);
 });
 
@@ -423,6 +427,9 @@ const playBtn = document.getElementById("playBtn");
 const audioStatus = document.getElementById("audioStatus");
 function clearChips() {
   document.querySelectorAll("#swaras .chip.playing").forEach(x => x.classList.remove("playing"));
+}
+function restartIfPlaying() {
+  if (playing) { stopPlayback(); playBtn.onclick(); }
 }
 function stopPlayback() {
   playing = false;
