@@ -47,6 +47,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
   padding: 10px 12px; font-size: 15px; font-weight: 600; min-width: 44px; text-align: center;
   transition: background .08s; }
 .chip.playing { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip.lo { border-style: dashed; }
 .sarow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .sarow label { font-size: 13.5px; color: var(--muted); flex: none; min-width: 44px; }
 .saseg { display: flex; flex-wrap: wrap; background: var(--panel2);
@@ -195,7 +196,20 @@ const LESSONS = [
   ]
 },
 {
-  id: "madhya", name: "Madhya Sthayi Varisai", num: 5,
+  id: "mandhra", name: "Mandhra Sthayi Varisai", num: 5,
+  desc: "8 patterns \u00b7 lower octave sequences", raga: "Mayamalavagowla",
+  patterns: [
+    { title: "1 \u00b7 Descent", sub: "S down to mandra S", notes: ["S",",N3",",D1",",P",",M1",",G3",",R1",",S"] },
+    { title: "2 \u00b7 Ascent", sub: "Mandra S back up", notes: [",S",",R1",",G3",",M1",",P",",D1",",N3","S"] },
+    { title: "3 \u00b7 Threes down", notes: ["S",",N3",",D1",",N3",",D1",",P",",D1",",P",",M1",",P",",M1",",G3",",M1",",G3",",R1",",G3",",R1",",S"] },
+    { title: "4 \u00b7 Threes up", notes: [",S",",R1",",G3",",R1",",G3",",M1",",G3",",M1",",P",",M1",",P",",D1",",P",",D1",",N3",",D1",",N3","S"] },
+    { title: "5 \u00b7 Full cycle", sub: "Down and back", notes: ["S",",N3",",D1",",P",",M1",",G3",",R1",",S",",R1",",G3",",M1",",P",",D1",",N3","S"] },
+    { title: "6 \u00b7 Janta", sub: "Doubled notes", notes: ["S","S",",N3",",N3",",D1",",D1",",P",",P",",M1",",M1",",G3",",G3",",R1",",R1",",S",",S"] },
+    { title: "7 \u00b7 Dhattu", sub: "Jumps", notes: ["S",",P",",N3",",M1",",D1",",G3",",P",",R1",",G3",",S"] },
+    { title: "8 \u00b7 Sprint", sub: "Fast run", notes: ["S",",N3",",D1",",P",",M1",",G3",",R1",",S",",S"] },
+  ] },
+{
+  id: "madhya", name: "Madhya Sthayi Varisai", num: 6,
   desc: "8 patterns · middle octave sequences", raga: "Mayamalavagowla",
   patterns: [
     { title: "1 · Ascent", notes: ["P","D1","N3","S'","R1'","G3'","M1'","P'"] },
@@ -209,7 +223,7 @@ const LESSONS = [
   ]
 },
 {
-  id: "mel", name: "Mel Sthayi Varisai", num: 6,
+  id: "mel", name: "Mel Sthayi Varisai", num: 7,
   desc: "8 patterns · upper octave sequences", raga: "Mayamalavagowla",
   patterns: [
     { title: "1 · Ascent", notes: ["S'","R1'","G3'","M1'","P'","D1'","N3'","S''"] },
@@ -227,8 +241,9 @@ const LESSONS = [
 /* ================= STATE ================= */
 const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
                P:7, D1:8, D2:9, D3:10, N1:9, N2:10, N3:11 };
-const norm = s => s.replace(/'/g, "");
+const norm = s => s.replace(/'/g, "").replace(/,/g, "");
 const upOct = s => (s.match(/'/g) || []).length;
+const dnOct = s => (s.match(/,/g) || []).length; // mandra sthayi: ,S = S one octave down
 const SA_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
 let curLesson = null, patIdx = 0;
@@ -325,7 +340,9 @@ function openPattern(i) {
   row.innerHTML = "";
   p.notes.forEach(s => {
     const c = document.createElement("div");
-    c.className = "chip"; c.textContent = s;
+    const isLo = s.includes(",");
+    c.className = "chip" + (isLo ? " lo" : "");
+    c.textContent = norm(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
     row.appendChild(c);
   });
   renderPatternList();
@@ -349,7 +366,7 @@ const SAMPLE_SET = {
   base: "samples/harmonium/",
   files: ["C4","Cs4","D4","Ds4","E4","F4","G4","Gs4","A4","As4","B4","C5"].map(f => f + ".mp3"),
   map: (s) => {
-    const semi = SEMI[norm(s)] + upOct(s) * 12 + saOffset; // semitones above C4
+    const semi = SEMI[norm(s)] + upOct(s) * 12 - dnOct(s) * 12 + saOffset; // semitones above C4
     const baseSemi = ((semi % 12) + 12) % 12;
     const oct = 4 + Math.floor(semi / 12);
     let file = FILE_NAMES[baseSemi] + oct + ".mp3";
@@ -399,7 +416,7 @@ function playSampledNote(t, swara, dur) {
 }
 // minimal synth fallback if samples fail to load
 function playSynthNote(t, swara, dur) {
-  const semi = SEMI[norm(swara)] + upOct(swara) * 12 + saOffset;
+  const semi = SEMI[norm(swara)] + upOct(swara) * 12 - dnOct(swara) * 12 + saOffset;
   const f = 261.63 * Math.pow(2, semi / 12);
   const o = actx.createOscillator(); o.type = "triangle"; o.frequency.value = f;
   const g = actx.createGain();
