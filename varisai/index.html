@@ -96,7 +96,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
     <div id="lessonList"></div>
   </section>
-  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-13 · 🔇 no sound on iPhone? turn off silent mode</p>
+  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-14 · 🔇 no sound on iPhone? turn off silent mode</p>
 </div>
 
 <!-- ============ PLAYER VIEW ============ -->
@@ -191,7 +191,6 @@ const LESSONS = [
 {
   id: "sarali", name: "Sarali Varisai", num: 1,
   desc: "14 patterns \u00b7 swara sequences with laya grouping", raga: "Mayamalavagowla",
-  layaNoDash: true,
   patterns: [
     { "title": "1 \u00b7 Simple ascent / descent", "sub": "Plain scale up and down", "laya": "1234 5678", "notes": ["S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
     { "title": "2 \u00b7 Focus on R and N", "sub": "Paired R and N phrases", "laya": "12-12-1234 and 1234 5678", "notes": ["S","R1","S","R1","S","R1","G3","M1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","S'","N3","S'","N3","D1","P","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1"],["S","R1"],["S","R1","G3","M1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3"],["S'","N3"],["S'","N3","D1","P"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
@@ -405,7 +404,6 @@ function openPattern(i) {
   if (p.laya) {
     const m = p.laya.match(/^(.*) \(([^)]+)\)$/);
     let slots = m ? m[1] : p.laya; const grp = m ? m[2] : "";
-    if (curLesson.layaNoDash) slots = slots.replace(/[-\u2013]/g, " \u00b7 ");
     li.innerHTML = "<b>Laya " + slots + "</b>" +
       (grp ? " <span>(" + grp + ") \u2014 tala count only</span>" : "");
     li.style.display = "block";
