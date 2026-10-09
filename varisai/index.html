@@ -198,7 +198,8 @@ const flatCells = cells => cells.flat();
 
 function layaExample(p) {
   const l = layaByPattern[cur];
-  const degs = flatCells(LAYAS[l].apply(p.lines[0]));
+  const { cells } = LAYAS[l].apply(p.lines[0]);
+  const degs = flatCells(cells);
   return degs.map(label).join(" ");
 }
 
