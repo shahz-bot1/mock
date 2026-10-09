@@ -71,13 +71,10 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 .layabox { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
 .layabox b { color: var(--text); }
 .talaline { display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px; }
-.tgroup { flex: 1 1 0; display: flex; gap: 2px; background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
+.tgroup { display: flex; gap: 2px; background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
 .tgroup .chip { flex: 1 1 0; border: 0; background: transparent; padding: 7px 2px; }
 .talaline > .chip { flex: none; align-self: center; }
 .tgroup .chip.playing { background: var(--accent); border-radius: 6px; }
-.talaline.barsep { gap: 6px; align-items: center; }
-.talaline.barsep .tgroup { border: 0; background: transparent; padding: 4px 2px; }
-.tsep { color: var(--muted); font-weight: 700; }
 .chip.hold { opacity: .55; }
 .swararow.grouped { display: block; }
 .view { display: none; } .view.on { display: block; }
@@ -99,7 +96,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
     <div id="lessonList"></div>
   </section>
-  <p class="foot">Varisai Studio v1 · <span id="buildVer"></span> · harmonium · build 2026.10.09-2 · 🔇 no sound on iPhone? turn off silent mode</p>
+  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-11 · 🔇 no sound on iPhone? turn off silent mode</p>
 </div>
 
 <!-- ============ PLAYER VIEW ============ -->
@@ -142,12 +139,6 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 </div>
 
 <script>
-// Build version - bump with each deployment
-const BUILD_VERSION = "2026.10.09-10";
-document.addEventListener("DOMContentLoaded", () => {
-  const bv = document.getElementById("buildVer");
-  if (bv) bv.textContent = "build " + BUILD_VERSION;
-});
 "use strict";
 
 /* ================= LESSON DATA =================
@@ -200,7 +191,7 @@ const LESSONS = [
 {
   id: "sarali", name: "Sarali Varisai", num: 1,
   desc: "14 patterns \u00b7 swara sequences with laya grouping", raga: "Mayamalavagowla",
-  layaNoDash: true, barSep: true,
+  layaNoDash: true,
   patterns: [
     { "title": "1 \u00b7 Simple ascent / descent", "sub": "Plain scale up and down", "laya": "1234 5678", "notes": ["S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
     { "title": "2 \u00b7 Focus on R and N", "sub": "Paired R and N phrases", "laya": "12-12-1234 and 1234 5678", "notes": ["S","R1","S","R1","S","R1","G3","M1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","S'","N3","S'","N3","D1","P","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1"],["S","R1"],["S","R1","G3","M1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","S'","N3","S'","N3","D1","P"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
@@ -425,20 +416,19 @@ function openPattern(i) {
   const dispTok = s =>
     s === "," ? "," : s === "-" ? "\u00b7" : s === "~" ? "\u2013" : swaraLabel(s) + "'".repeat(upOct(s));
   if (p.dlines) {
-    const barSep = !!curLesson.barSep;
-    const mkSep = () => { const sp = document.createElement("span"); sp.className = "tsep"; sp.textContent = "|"; return sp; };
     p.dlines.forEach(line => {
       const ld = document.createElement("div");
-      ld.className = "talaline" + (barSep ? " barsep" : "");
-      if (barSep) ld.appendChild(mkSep());
+      ld.className = "talaline";
       line.forEach(g => {
         if (g.length === 1 && (g[0] === "-" || g[0] === ",")) {
           const c = document.createElement("span");
           c.className = "chip rest"; c.textContent = g[0] === "," ? "," : "\u00b7";
+          c.style.flex = "1 1 0";
           ld.appendChild(c);
         } else {
           const gd = document.createElement("div");
           gd.className = "tgroup";
+          gd.style.flex = g.length + " " + g.length + " 0";
           g.forEach(tok => {
             const c = document.createElement("span");
             c.className = "chip" + (tok === "-" || tok === "," ? " rest" : tok === "~" ? " hold" : "");
@@ -447,7 +437,6 @@ function openPattern(i) {
           });
           ld.appendChild(gd);
         }
-        if (barSep) ld.appendChild(mkSep());
       });
       row.appendChild(ld);
     });
