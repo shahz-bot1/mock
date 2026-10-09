@@ -48,6 +48,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
   transition: background .08s; }
 .chip.playing { background: var(--accent); border-color: var(--accent); color: #fff; }
 .chip.lo { border-style: dashed; }
+.chip.rest { opacity: .45; }
 .sarow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .sarow label { font-size: 13.5px; color: var(--muted); flex: none; min-width: 44px; }
 .saseg { display: flex; flex-wrap: wrap; background: var(--panel2);
@@ -134,22 +135,21 @@ const LESSONS = [
   id: "sarali", name: "Sarali Varisai", num: 1,
   desc: "14 patterns · straight swara sequences", raga: "Mayamalavagowla",
   patterns: [
-    { title: "1 · Ascent", sub: "Straight arohana", notes: ["S","R1","G3","M1","P","D1","N3","S'"] },
-    { title: "2 · Descent", sub: "Straight avarohana", notes: ["S'","N3","D1","P","M1","G3","R1","S"] },
-    { title: "3 · Threes up", sub: "3-note groups ascending", notes: ["S","R1","G3","R1","G3","M1","G3","M1","P","M1","P","D1","P","D1","N3","D1","N3","S'"] },
-    { title: "4 · Threes down", sub: "3-note groups descending", notes: ["S'","N3","D1","N3","D1","P","D1","P","M1","P","M1","G3","M1","G3","R1","G3","R1","S"] },
-    { title: "5 · Fours up", sub: "4-note groups ascending", notes: ["S","R1","G3","M1","R1","G3","M1","P","G3","M1","P","D1","M1","P","D1","N3","P","D1","N3","S'"] },
-    { title: "6 · Fours down", sub: "4-note groups descending", notes: ["S'","N3","D1","P","N3","D1","P","M1","D1","P","M1","G3","P","M1","G3","R1","M1","G3","R1","S"] },
-    { title: "7 · Full cycle", sub: "Ascent + descent", notes: ["S","R1","G3","M1","P","D1","N3","S'","N3","D1","P","M1","G3","R1","S"] },
-    { title: "8 · Twos up", sub: "2-note groups ascending", notes: ["S","R1","R1","G3","G3","M1","M1","P","P","D1","D1","N3","N3","S'"] },
-    { title: "9 · Twos down", sub: "2-note groups descending", notes: ["S'","N3","N3","D1","D1","P","P","M1","M1","G3","G3","R1","R1","S"] },
-    { title: "10 · Fives up", sub: "5-note groups ascending", notes: ["S","R1","G3","M1","P","R1","G3","M1","P","D1","G3","M1","P","D1","N3","M1","P","D1","N3","S'"] },
-    { title: "11 · Fives down", sub: "5-note groups descending", notes: ["S'","N3","D1","P","M1","N3","D1","P","M1","G3","D1","P","M1","G3","R1","P","M1","G3","R1","S"] },
-    { title: "12 · Sevens up", sub: "7-note groups ascending", notes: ["S","R1","G3","M1","P","D1","N3","R1","G3","M1","P","D1","N3","S'"] },
-    { title: "13 · Sevens down", sub: "7-note groups descending", notes: ["S'","N3","D1","P","M1","G3","R1","N3","D1","P","M1","G3","R1","S"] },
-    { title: "14 · Double cycle", sub: "Up–down twice through", notes: ["S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","G3","R1","S"] },
-  ]
-},
+    { title: "1 \u00b7 Simple ascent / descent", sub: "Simple ascent / descent", notes: ["S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"] },
+    { title: "2 \u00b7 Focus on R and N", sub: "Focus on R and N", notes: ["S", "R1", "S", "R1", "S", "R1", "G3", "M1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "S'", "N3", "S'", "N3", "D1", "P", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"] },
+    { title: "3 \u00b7 Focus on G and D", sub: "Focus on G and D", notes: ["S", "R1", "G3", "S", "R1", "G3", "S", "R1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "S'", "N3", "D1", "S'", "N3", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"] },
+    { title: "4 \u00b7 Focus on M and P", sub: "Focus on M and P", notes: ["S", "R1", "G3", "M1", "S", "R1", "G3", "M1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "S'", "N3", "D1", "P", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"] },
+    { title: "5 \u00b7 Focus on P and M (dheergam);", sub: "Focus on P and M (dheergam); R, N", notes: ["S", "R1", "G3", "M1", "P", "-", "S", "R1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "-", "S'", "N3", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"] },
+    { title: "6 \u00b7 Focus on G and D", sub: "Focus on G and D", notes: ["S", "R1", "G3", "M1", "P", "D1", "S", "R1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "G3", "S'", "N3", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"] },
+    { title: "7 \u00b7 Focus on N and R (dheergam)", sub: "Focus on N and R (dheergam)", notes: ["S", "R1", "G3", "M1", "P", "D1", "N3", "-", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "G3", "R1", "-", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"] },
+    { title: "8 \u00b7 Zigzag", sub: "Zigzag: P M G R / M P D N", notes: ["S", "R1", "G3", "M1", "P", "M1", "G3", "R1", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "P", "D1", "N3", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"] },
+    { title: "9 \u00b7 Zigzag", sub: "Zigzag: P M D P / M P G M", notes: ["S", "R1", "G3", "M1", "P", "M1", "D1", "P", "S", "R1", "G3", "M1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "M1", "P", "G3", "M1", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"] },
+    { title: "10 \u00b7 Dheergam", sub: "Dheergam: upper tetrachord", notes: ["S", "R1", "G3", "M1", "P", "-", "G3", "M1", "P", "-", "-", "-", "P", "-", "-", "-", "G3", "M1", "P", "D1", "N3", "D1", "P", "M1", "G3", "M1", "P", "G3", "M1", "G3", "R1", "S"] },
+    { title: "11 \u00b7 Dheergam from upper octave", sub: "Dheergam from upper octave", notes: ["S'", "-", "N3", "D1", "N3", "-", "D1", "P", "D1", "-", "P", "M1", "P", "-", "P", "-", "G3", "M1", "P", "D1", "N3", "D1", "P", "M1", "G3", "M1", "P", "G3", "M1", "G3", "R1", "S"] },
+    { title: "12 \u00b7 Doubled notes, upper octave,", sub: "Doubled notes, upper octave, dheergam", notes: ["S'", "S'", "N3", "D1", "N3", "N3", "D1", "P", "D1", "D1", "P", "M1", "P", "-", "P", "-", "G3", "M1", "P", "D1", "N3", "D1", "P", "M1", "G3", "M1", "P", "G3", "M1", "G3", "R1", "S"] },
+    { title: "13 \u00b7 Dheergam focus", sub: "Dheergam focus: G, P, D; region M-N; zigzag emphasis, D-notes", notes: ["S", "R1", "G3", "R1", "G3", "-", "G3", "M1", "P", "M1", "P", "-", "D1", "P", "D1", "-", "M1", "P", "D1", "P", "D1", "N3", "D1", "P", "M1", "P", "D1", "P", "M1", "G3", "R1", "S"] },
+    { title: "14 \u00b7 Dheergam pairs to upper octa", sub: "Dheergam pairs to upper octave", notes: ["S", "R1", "G3", "M1", "P", "-", "P", "-", "D1", "D1", "P", "-", "M1", "M1", "P", "-", "D1", "N3", "S'", "-", "S'", "N3", "D1", "P", "S'", "N3", "D1", "P", "M1", "G3", "R1", "S"] }
+  ] },
 {
   id: "janta", name: "Janta Varisai", num: 2,
   desc: "10 patterns · double-note (janta) sequences", raga: "Mayamalavagowla",
@@ -165,7 +165,7 @@ const LESSONS = [
     { title: "9 · Mixed doubles down", sub: "Single–double alternation", notes: ["S'","N3","N3","D1","N3","D1","D1","P","D1","P","P","M1","P","M1","M1","G3","M1","G3","G3","R1","G3","R1","R1","S"] },
     { title: "10 · Janta sprint", sub: "Doubles, steady flow", notes: ["S","S","R1","R1","G3","G3","M1","M1","P","P","D1","D1","N3","N3","S'","S'","S'","S'"] },
   ]
-},
+},,
 {
   id: "dhattu", name: "Dhattu Varisai", num: 3,
   desc: "10 patterns · jumping (dhattu) sequences", raga: "Mayamalavagowla",
@@ -181,7 +181,7 @@ const LESSONS = [
     { title: "9 · Wide leaps up", notes: ["S","D1","R1","N3","G3","S'","M1","S'"] },
     { title: "10 · Wide leaps down", notes: ["S'","M1","S'","G3","N3","R1","D1","S"] },
   ]
-},
+},,
 {
   id: "alankaram", name: "Sapta Tala Alankarams", num: 4,
   desc: "7 alankarams · one per tala", raga: "Mayamalavagowla",
@@ -194,7 +194,7 @@ const LESSONS = [
     { title: "Ata", sub: "14 aksharas · laghu–laghu–dhrutam–dhrutam", notes: ["S","R1","G3","M1","P","D1","N3","S'","N3","D1","P","M1","G3","R1"] },
     { title: "Eka", sub: "4 aksharas · single laghu", notes: ["S","R1","G3","M1"] },
   ]
-},
+},,
 {
   id: "mandhra", name: "Mandhra Sthayi Varisai", num: 5,
   desc: "8 patterns \u00b7 lower octave sequences", raga: "Mayamalavagowla",
@@ -207,7 +207,7 @@ const LESSONS = [
     { title: "6 \u00b7 Janta", sub: "Doubled notes", notes: ["S","S",",N3",",N3",",D1",",D1",",P",",P",",M1",",M1",",G3",",G3",",R1",",R1",",S",",S"] },
     { title: "7 \u00b7 Dhattu", sub: "Jumps", notes: ["S",",P",",N3",",M1",",D1",",G3",",P",",R1",",G3",",S"] },
     { title: "8 \u00b7 Sprint", sub: "Fast run", notes: ["S",",N3",",D1",",P",",M1",",G3",",R1",",S",",S"] },
-  ] },
+  ] },,
 {
   id: "madhya", name: "Madhya Sthayi Varisai", num: 6,
   desc: "8 patterns · middle octave sequences", raga: "Mayamalavagowla",
@@ -242,6 +242,7 @@ const LESSONS = [
 const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
                P:7, D1:8, D2:9, D3:10, N1:9, N2:10, N3:11 };
 const norm = s => s.replace(/'/g, "").replace(/,/g, "");
+const isRest = s => s === "-";
 const upOct = s => (s.match(/'/g) || []).length;
 const dnOct = s => (s.match(/,/g) || []).length; // mandra sthayi: ,S = S one octave down
 const SA_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -341,8 +342,8 @@ function openPattern(i) {
   p.notes.forEach(s => {
     const c = document.createElement("div");
     const isLo = s.includes(",");
-    c.className = "chip" + (isLo ? " lo" : "");
-    c.textContent = norm(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
+    c.className = "chip" + (isLo ? " lo" : "") + (isRest(s) ? " rest" : "");
+    c.textContent = isRest(s) ? "\u00b7" : norm(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
     row.appendChild(c);
   });
   renderPatternList();
@@ -450,8 +451,10 @@ function schedulePass() {
   const t0 = actx.currentTime + 0.08;
   const chips = [...document.getElementById("swaras").children];
   notes.forEach((s, i) => {
-    const played = playSampledNote(t0 + i * step, s, step * 0.96);
-    if (!played) playSynthNote(t0 + i * step, s, step * 0.96);
+    if (!isRest(s)) {
+      const played = playSampledNote(t0 + i * step, s, step * 0.96);
+      if (!played) playSynthNote(t0 + i * step, s, step * 0.96);
+    }
     playTimer.push(setTimeout(() => {
       if (!playing) return;
       clearChips();
