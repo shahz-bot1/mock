@@ -440,7 +440,7 @@ function openPattern(i) {
   row.innerHTML = "";
   row.classList.toggle("grouped", !!p.dlines);
   const dispTok = s =>
-    s === "-" ? "\u00b7" : s === "~" ? "\u2013" : swaraLabel(s) + "'".repeat(upOct(s));
+    s === "-" ? "-" : s === "~" ? "," : swaraLabel(s) + "'".repeat(upOct(s));
   if (p.dlines) {
     p.dlines.forEach(line => {
       const ld = document.createElement("div");
@@ -448,7 +448,7 @@ function openPattern(i) {
       line.forEach(g => {
         if (g.length === 1 && g[0] === "-") {
           const c = document.createElement("span");
-          c.className = "chip rest"; c.textContent = "\u00b7";
+          c.className = "chip rest"; c.textContent = "-";
           ld.appendChild(c);
         } else {
           const gd = document.createElement("div");
@@ -469,7 +469,7 @@ function openPattern(i) {
       const c = document.createElement("div");
       const isLo = s[0] === ",";
       c.className = "chip" + (isLo ? " lo" : "") + (isRest(s) ? " rest" : "");
-      c.textContent = isRest(s) ? "\u00b7" : swaraLabel(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
+      c.textContent = isRest(s) ? "-" : swaraLabel(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
       row.appendChild(c);
     });
   }
