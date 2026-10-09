@@ -103,7 +103,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     </div>
     <div class="sliderow">
       <label>Tempo</label>
-      <input type="range" id="tempoSlider" min="30" max="240" step="10" value="90">
+      <input type="range" id="tempoSlider" min="30" max="90" step="10" value="90">
       <span id="tempoVal">90 BPM</span>
     </div>
     <div class="sarow">
@@ -239,7 +239,7 @@ let curLesson = null, patIdx = 0;
 let saOffset = 0, tempo = 90, speed = 2, loopOn = true;
 try {
   const v = localStorage.getItem("varisai-sa");       if (v !== null && +v >= 0 && +v < 12) saOffset = +v;
-  const t = localStorage.getItem("varisai-tempo");    if (t !== null && +t >= 30 && +t <= 240) tempo = +t;
+  const t = localStorage.getItem("varisai-tempo");    if (t !== null && +t >= 30 && +t <= 90) tempo = +t;
   const s = localStorage.getItem("varisai-speed");    if (["1","2","4","8"].includes(s)) speed = +s;
 } catch (e) {}
 const save = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
