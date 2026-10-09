@@ -70,9 +70,10 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 .loopbtn:disabled { opacity: .45; cursor: default; }
 .layabox { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
 .layabox b { color: var(--text); }
-.talaline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
-.tgroup { display: inline-flex; gap: 4px; background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
-.tgroup .chip { border: 0; background: transparent; padding: 7px 5px; }
+.talaline { display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px; }
+.tgroup { flex: 1 1 0; display: flex; gap: 2px; background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
+.tgroup .chip { flex: 1 1 0; border: 0; background: transparent; padding: 7px 2px; }
+.talaline > .chip { flex: none; align-self: center; }
 .tgroup .chip.playing { background: var(--accent); border-radius: 6px; }
 .chip.hold { opacity: .55; }
 .swararow.grouped { display: block; }
