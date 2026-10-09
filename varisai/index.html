@@ -96,7 +96,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
     <div id="lessonList"></div>
   </section>
-  <p class="foot">Varisai Studio v1 · harmonium · 🔇 no sound on iPhone? turn off silent mode</p>
+  <p class="foot">Varisai Studio v1 · <span id="buildVer"></span> · harmonium · 🔇 no sound on iPhone? turn off silent mode</p>
 </div>
 
 <!-- ============ PLAYER VIEW ============ -->
@@ -139,6 +139,12 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 </div>
 
 <script>
+// Build version - bump with each deployment to verify live status
+const BUILD_VERSION = "2026.10.09-6";
+document.addEventListener("DOMContentLoaded", () => {
+  const bv = document.getElementById("buildVer");
+  if (bv) bv.textContent = "build " + BUILD_VERSION;
+});
 "use strict";
 
 /* ================= LESSON DATA =================
