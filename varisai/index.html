@@ -110,6 +110,10 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
       <label>Speed</label>
       <div class="saseg" id="spdSeg" style="flex-wrap:nowrap"></div>
     </div>
+    <div class="sarow">
+      <label>Labels</label>
+      <div class="saseg" id="lblSeg" style="flex-wrap:nowrap"></div>
+    </div>
     <button class="bigplay" id="playBtn">▶ Play pattern</button>
     <div class="playrow">
       <button class="loopbtn on" id="loopBtn">🔁 Loop</button>
@@ -230,16 +234,18 @@ const LESSONS = [
 const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
                P:7, D1:8, D2:9, D3:10, N1:9, N2:10, N3:11 };
 const norm = s => s.replace(/'/g, "").replace(/,/g, "");
+const swaraLabel = s => simpleLabels ? norm(s).replace(/[123]/g, "") : norm(s);
 const isRest = s => s === "-";
 const upOct = s => (s.match(/'/g) || []).length;
 const dnOct = s => (s.match(/,/g) || []).length; // mandra sthayi: ,S = S one octave down
 const SA_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
 let curLesson = null, patIdx = 0;
-let saOffset = 0, tempo = 60, speed = 2, loopOn = true;
+let saOffset = 0, tempo = 60, speed = 2, loopOn = true, simpleLabels = false;
 try {
   const v = localStorage.getItem("varisai-sa");       if (v !== null && +v >= 0 && +v < 12) saOffset = +v;
   const t = localStorage.getItem("varisai-tempo");    if (t !== null && +t >= 30 && +t <= 90) tempo = +t;
+  simpleLabels = localStorage.getItem("varisai-labels") === "simple";
   const s = localStorage.getItem("varisai-speed");    if (["1","2","4","8"].includes(s)) speed = +s;
 } catch (e) {}
 const save = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
@@ -294,6 +300,18 @@ const spdSeg = document.getElementById("spdSeg");
   spdSeg.appendChild(b);
 });
 
+const lblSeg = document.getElementById("lblSeg");
+[["S R G", true], ["S R\u2081 G\u2083", false]].forEach(([label, simple]) => {
+  const b = document.createElement("button");
+  b.textContent = label;
+  b.style.flex = "1 1 0";
+  b.classList.toggle("on", simple === simpleLabels);
+  b.onclick = () => { simpleLabels = simple; save("varisai-labels", simple ? "simple" : "full");
+    lblSeg.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    if (curLesson) openPattern(patIdx); };
+  lblSeg.appendChild(b);
+});
+
 const loopBtn = document.getElementById("loopBtn");
 loopBtn.classList.toggle("on", loopOn);
 loopBtn.onclick = () => { loopOn = !loopOn; loopBtn.classList.toggle("on", loopOn); };
@@ -335,7 +353,7 @@ function openPattern(i) {
     const c = document.createElement("div");
     const isLo = s.includes(",");
     c.className = "chip" + (isLo ? " lo" : "") + (isRest(s) ? " rest" : "");
-    c.textContent = isRest(s) ? "\u00b7" : norm(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
+    c.textContent = isRest(s) ? "\u00b7" : swaraLabel(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
     row.appendChild(c);
   });
   renderPatternList();
