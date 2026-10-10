@@ -15,7 +15,10 @@
 .tok.hold, .tok.gap { color: var(--muted); }
 .tok.cur { outline: 2px solid var(--warn); }
 .tok.bad { border-color: var(--bad); color: var(--bad); }
+.tok.stk { text-decoration: underline; text-underline-offset: 3px; }
 .tok sub { font-size: 9px; color: var(--muted); }
+.abar { color: var(--accent); font-weight: 800; padding: 6px 2px; font-size: 14px; }
+.abar.av { font-size: 16px; }
 .sah { color: var(--muted); font-size: 13px; font-style: italic; margin: 6px 2px 0; }
 .sec-h { display: flex; align-items: center; gap: 8px; margin: 14px 0 4px; }
 .sec-h b { font-size: 15px; }
@@ -41,10 +44,12 @@ textarea.ly { width: 100%; min-height: 34px; margin-top: 6px; font-size: 13px; }
     <button class="btn" id="playBtn">▶ Play</button>
     <button class="btn ghost" id="addCharanam">＋ Charanam</button>
     <button class="btn ghost" id="demoBtn">Load demo phrase</button>
+    <button class="btn ghost" id="verifiedBtn">Load verified example</button>
   </div>
-  <p class="note">Token format: <b>S R2 G3</b> · stack with <b>+</b> (<b>R2+G3</b>) · hold <b>,</b> · gap <b>–</b> ·
-  low octave <b>.S</b> · high <b>S'</b>. Bar lines appear every 8 beats (Adi avarta).
-  Tokens outside the raga are flagged red but still play.</p>
+  <p class="note">Token format: <b>S R2 G3</b> · stack with <b>+</b> (<b>R2+G3</b>, rendered
+  <u>underlined</u> per print convention for fast phrases) · hold <b>,</b> (+1 beat), <b>,,</b> or <b>;</b> (+2 beats) ·
+  gap <b>–</b> · low octave <b>.S</b> · high <b>S'</b>. Bars auto-mark: <b>|</b> after tala angas,
+  <b>||</b> at each avarta end (Adi 4+2+2). Tokens outside the raga are flagged red but still play.</p>
 </div>
 
 <div id="sections"></div>
@@ -65,6 +70,11 @@ const d = () => store.data;
 document.getElementById("ragaSlot").appendChild(SB.ragaSelect(d().ragaId, v => {
   d().ragaId = v; store.save(); render();
 }));
+function refreshRagaSel() {
+  const slot = document.getElementById("ragaSlot");
+  slot.innerHTML = "";
+  slot.appendChild(SB.ragaSelect(d().ragaId, v => { d().ragaId = v; store.save(); render(); }));
+}
 document.getElementById("saSlot").appendChild(SB.saSelect(d().saOffset, v => {
   d().saOffset = v; store.save(); restartIfPlaying();
 }));
@@ -94,7 +104,17 @@ function parseToken(tok, ragaSet) {
 function parseLine(sw) {
   const raga = SB.ragaById(d().ragaId);
   const set = raga ? new Set([...raga.aro, ...raga.ava]) : null;
-  return sw.trim().split(/\s+/).filter(Boolean).map(t => ({ tok:t, ...parseToken(t, set) }));
+  const out = [];
+  sw.trim().split(/\s+/).filter(Boolean).forEach(t => {
+    if (t === ",," || t === ";") {
+      // 2-beat hold (print convention) = two consecutive hold slots
+      out.push({ tok:",", slot:{ k:"hold" }, ok:true });
+      out.push({ tok:",", slot:{ k:"hold" }, ok:true });
+      return;
+    }
+    out.push({ tok:t, ...parseToken(t, set) });
+  });
+  return out;
 }
 
 let chipEls = []; // flat chip list for highlight
@@ -125,24 +145,36 @@ function render() {
       parsed.forEach((p, ti) => {
         const el = document.createElement("span");
         let cls = "tok";
-        if (ti % 8 === 0 && ti > 0) cls += " bar";
+        if (p.ok && p.slot.k === "note" && p.slot.stack.length > 1) cls += " stk"; // brigha: underline = double speed (print convention)
         if (!p.ok) cls += " bad";
         else if (p.slot.k === "hold") cls += " hold";
         else if (p.slot.k === "gap") cls += " gap";
         else if (p.inRaga === false) cls += " bad";
         el.className = cls;
-        el.innerHTML = p.ok
-          ? (p.slot.k === "note"
+        if (p.ok && p.slot.k === "note" && p.slot.stack.length > 1)
+          el.title = "sung together, double speed (print: underline)";
+        el.innerHTML = !p.ok ? "?"
+          : p.slot.k === "note"
               ? p.slot.stack.map(n => {
                   const m = n.st.match(/^([A-Z])(\d?)$/);
                   const dot = n.oct < 0 ? ".".repeat(-n.oct) : "";
                   const up = n.oct > 0 ? "'".repeat(n.oct) : "";
                   return dot + m[1] + (m[2] ? "<sub>"+m[2]+"</sub>" : "") + up;
                 }).join("+")
-              : p.tok)
-          : "?";
+              : p.slot.k === "hold" ? "," : "–";
         toks.appendChild(el);
         chipEls.push(el);
+        // anga bars: | after laghu(4) and first drutam(6), || at avarta end(8) — Adi 4+2+2
+        const pos = (ti + 1) % 8;
+        if (pos === 4 || pos === 6) {
+          const b = document.createElement("span");
+          b.className = "abar"; b.textContent = "|";
+          toks.appendChild(b);
+        } else if (pos === 0 && ti > 0) {
+          const b = document.createElement("span");
+          b.className = "abar av"; b.textContent = "||";
+          toks.appendChild(b);
+        }
       });
       card.appendChild(toks);
       if (ln.ly.trim()) {
@@ -206,6 +238,20 @@ document.getElementById("addCharanam").onclick = () => {
   const n = d().sections.filter(s => s.name.startsWith("Charanam")).length + 1;
   d().sections.push({ name:"Charanam " + n, lines:[ { sw:"", ly:"" } ] });
   store.save(); render();
+};
+document.getElementById("verifiedBtn").onclick = () => {
+  stop();
+  // Geeta #11, Raaga Aananda Bhairavi, Adi tala — transcribed as printed in
+  // srgm.info "Geeta's" manual (research 2026-10-11). "." = elongation in source.
+  d().ragaId = "aanandabhairavi";
+  d().sections = [
+    { name:"Geeta #11 · Aananda Bhairavi · Adi (srgm.info)", lines:[
+      { sw:"N2 D2 N2 S S , S S G2 R2 S N2 N2 D2 P M1",
+        ly:"Ka Ma La Su Lo . Cha Na Vi Ma La Ta Taa . Ki Ni" },
+      { sw:"P P P D2 N2 D2 P M1 M1 P M1 P G2 R2 S ,",
+        ly:"Ma Raa . La Gaa . Mi Ni Ka Ri Ha Ra Ma . Dhye ." } ] },
+  ];
+  store.save(); refreshRagaSel(); render();
 };
 document.getElementById("demoBtn").onclick = () => {
   stop();
