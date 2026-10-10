@@ -114,7 +114,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
     <div id="lessonList"></div>
   </section>
-  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-38 · 🔇 no sound on iPhone? turn off silent mode</p>
+  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-39 · 🔇 no sound on iPhone? turn off silent mode</p>
 </div>
 
 <!-- ============ PLAYER VIEW ============ -->
@@ -444,8 +444,11 @@ function openPattern(i) {
   const row = document.getElementById("swaras");
   row.innerHTML = "";
   row.classList.toggle("grouped", !!p.dlines);
-  const dispTok = s =>
-    (s === "," || s === "-" || s === "~") ? s : swaraLabel(s) + "'".repeat(upOct(s));
+  const dispTok = s => {
+    if (s === "," || s === "-" || s === "~") return s;
+    const isLo = s[0] === ",";
+    return swaraLabel(s) + (isLo ? "\u0323" : "") + "'".repeat(upOct(s));
+  };
   if (p.dlines) {
     p.dlines.forEach(line => {
       const ld = document.createElement("div");
