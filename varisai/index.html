@@ -77,6 +77,17 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 .laya-and { color: var(--muted); font-size: 12px; font-style: italic; }
 .laya-legend { font-size: 11.5px; color: var(--muted); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 7px; }
 .laya-legend code { background: var(--bg); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+/* Tala component (tappable, with popover coachmark) */
+.tala-wrap { position: relative; }
+.tala-box-click { cursor: pointer; }
+.tala-popover { position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; z-index: 20; box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+.tala-popover::before { content: ''; position: absolute; top: -6px; left: 24px; width: 12px; height: 12px; background: var(--panel2); border-left: 1px solid var(--border); border-top: 1px solid var(--border); transform: rotate(45deg); }
+.tala-popover h4 { margin: 0 0 8px; font-size: 13px; }
+.tala-popover .trow { display: flex; gap: 8px; font-size: 12.5px; margin-bottom: 6px; align-items: baseline; }
+.tala-popover .trow:last-child { margin-bottom: 0; }
+.tala-popover code { background: var(--bg); padding: 2px 7px; border-radius: 5px; font-size: 12px; min-width: 28px; text-align: center; }
+.tala-popover .tdef { color: var(--muted); }
+.tala-popover .tdef b { color: var(--text); }
 .talaline { display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px; }
 .tgroup { display: flex; gap: 2px; background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
 .tgroup .chip { flex: 1 1 0; border: 0; background: transparent; padding: 7px 2px; }
@@ -103,7 +114,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
     <div id="lessonList"></div>
   </section>
-  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-33 · 🔇 no sound on iPhone? turn off silent mode</p>
+  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-34 · 🔇 no sound on iPhone? turn off silent mode</p>
 </div>
 
 <!-- ============ PLAYER VIEW ============ -->
@@ -204,13 +215,13 @@ const LESSONS = [
   id: "alankaram", name: "Sapta Tala Alankarams", num: 4,
   desc: "7 alankarams \u00b7 one per tala", raga: "Mayamalavagowla",
   patterns: [
-    { title: "Dhruva", sub: "Chatusra jati \u00b7 14 aksharas \u00b7 I4 O I4 I4", notes: ["S", "R1", "G3", "M1", "G3", "R1", "S", "R1", "G3", "R1", "S", "R1", "G3", "M1", "R1", "G3", "M1", "P", "M1", "G3", "R1", "G3", "M1", "G3", "R1", "G3", "M1", "P", "G3", "M1", "P", "D1", "P", "M1", "G3", "M1", "P", "M1", "G3", "M1", "P", "D1", "M1", "P", "D1", "N3", "D1", "P", "M1", "P", "D1", "P", "M1", "P", "D1", "N3", "P", "D1", "N3", "S'", "N3", "D1", "P", "D1", "N3", "D1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "D1", "N3", "S'", "N3", "D1", "N3", "S'", "N3", "D1", "P", "N3", "D1", "P", "M1", "P", "D1", "N3", "D1", "P", "D1", "N3", "D1", "P", "M1", "D1", "P", "M1", "G3", "M1", "P", "D1", "P", "M1", "P", "D1", "P", "M1", "G3", "P", "M1", "G3", "R1", "G3", "M1", "P", "M1", "G3", "M1", "P", "M1", "G3", "R1", "M1", "G3", "R1", "S", "R1", "G3", "M1", "G3", "R1", "G3", "M1", "G3", "R1", "S"] },
-    { title: "Matya", sub: "Chatusra jati \u00b7 10 aksharas \u00b7 I4 O I4", notes: ["S", "R1", "G3", "R1", "S", "R1", "S", "R1", "G3", "M1", "R1", "G3", "M1", "G3", "R1", "G3", "R1", "G3", "M1", "P", "G3", "M1", "P", "M1", "G3", "M1", "G3", "M1", "P", "D1", "M1", "P", "D1", "P", "M1", "P", "M1", "P", "D1", "N3", "P", "D1", "N3", "D1", "P", "D1", "P", "D1", "N3", "S'", "S'", "N3", "D1", "N3", "S'", "N3", "S'", "N3", "D1", "P", "N3", "D1", "P", "D1", "N3", "D1", "N3", "D1", "P", "M1", "D1", "P", "M1", "P", "D1", "P", "D1", "P", "M1", "G3", "P", "M1", "G3", "M1", "P", "M1", "P", "M1", "G3", "R1", "M1", "G3", "R1", "G3", "M1", "G3", "M1", "G3", "R1", "S"] },
-    { title: "Rupaka", sub: "Chatusra jati \u00b7 6 aksharas \u00b7 O I4", notes: ["S", "R1", "S", "R1", "G3", "M1", "R1", "G3", "R1", "G3", "M1", "P", "G3", "M1", "G3", "M1", "P", "D1", "M1", "P", "M1", "P", "D1", "N3", "P", "D1", "P", "D1", "N3", "S'", "S'", "N3", "S'", "N3", "D1", "P", "N3", "D1", "N3", "D1", "P", "M1", "D1", "P", "D1", "P", "M1", "G3", "P", "M1", "P", "M1", "G3", "R1", "M1", "G3", "M1", "G3", "R1", "S"] },
-    { title: "Jhampa", sub: "Misra jati \u00b7 10 aksharas \u00b7 I7 U O", notes: ["S", "R1", "G3", "S", "R1", "S", "R1", "G3", "M1", "-", "R1", "G3", "M1", "R1", "G3", "R1", "G3", "M1", "P", "-", "G3", "M1", "P", "G3", "M1", "G3", "M1", "P", "D1", "-", "M1", "P", "D1", "M1", "P", "M1", "P", "D1", "N3", "-", "P", "D1", "N3", "P", "D1", "P", "D1", "N3", "S'", "-", "S'", "N3", "D1", "S'", "N3", "S'", "N3", "D1", "P", "-", "N3", "D1", "P", "N3", "D1", "N3", "D1", "P", "M1", "-", "D1", "P", "M1", "D1", "P", "D1", "P", "M1", "G3", "-", "P", "M1", "G3", "P", "M1", "P", "M1", "G3", "R1", "-", "M1", "G3", "R1", "M1", "G3", "M1", "G3", "R1", "S"] },
-    { title: "Triputa", sub: "Tisra jati \u00b7 7 aksharas \u00b7 I3 O O", notes: ["S", "R1", "G3", "S", "R1", "G3", "M1", "R1", "G3", "M1", "R1", "G3", "M1", "P", "G3", "M1", "P", "G3", "M1", "P", "D1", "M1", "P", "D1", "M1", "P", "D1", "N3", "P", "D1", "N3", "P", "D1", "N3", "S'", "S'", "N3", "D1", "S'", "N3", "D1", "P", "N3", "D1", "P", "N3", "D1", "P", "M1", "D1", "P", "M1", "D1", "P", "M1", "G3", "P", "M1", "G3", "P", "M1", "G3", "R1", "M1", "G3", "R1", "M1", "G3", "R1", "S"] },
-    { title: "Ata", sub: "Khanda jati \u00b7 14 aksharas \u00b7 I5 I5 O O", notes: ["S", "R1", "-", "G3", "-", "S", "-", "R1", "G3", "-", "M1", "-", "M1", "-", "R1", "G3", "-", "M1", "-", "R1", "-", "G3", "M1", "-", "P", "-", "P", "-", "G3", "M1", "-", "P", "-", "G3", "-", "M1", "P", "-", "D1", "-", "D1", "-", "M1", "P", "-", "D1", "-", "M1", "-", "P", "D1", "-", "N3", "-", "N3", "-", "P", "D1", "-", "N3", "-", "P", "-", "D1", "N3", "-", "S'", "-", "S'", "-", "S'", "N3", "-", "D1", "-", "S'", "-", "N3", "D1", "-", "P", "-", "P", "-", "N3", "D1", "-", "P", "-", "N3", "-", "D1", "P", "-", "M1", "-", "M1", "-", "D1", "P", "-", "M1", "-", "D1", "-", "P", "M1", "-", "G3", "-", "G3", "-", "P", "M1", "-", "G3", "-", "P", "-", "M1", "G3", "-", "R1", "-", "R1", "-", "M1", "G3", "-", "R1", "-", "M1", "-", "G3", "R1", "-", "S", "-", "S", "-"] },
-    { title: "Eka", sub: "Chatusra jati \u00b7 4 aksharas \u00b7 I4", notes: ["S", "R1", "G3", "M1", "R1", "G3", "M1", "P", "G3", "M1", "P", "D1", "M1", "P", "D1", "N3", "P", "D1", "N3", "S'", "S'", "N3", "D1", "P", "N3", "D1", "P", "M1", "D1", "P", "M1", "G3", "P", "M1", "G3", "R1", "M1", "G3", "R1", "S"] }
+    { title: "Dhruva", sub: "Chatusra jati \u00b7 14 aksharas \u00b7 I4 O I4 I4", "tala": "I4 0 I4 I4", "dlines": [[["S","R1","G3","M1"],["G3","R1"],["S","R1","G3","R1"],["S","R1","G3","M1"]],[["R1","G3","M1","P"],["M1","G3"],["R1","G3","M1","G3"],["R1","G3","M1","P"]],[["G3","M1","P","D1"],["P","M1"],["G3","M1","P","M1"],["G3","M1","P","D1"]],[["M1","P","D1","N3"],["D1","P"],["M1","P","D1","P"],["M1","P","D1","N3"]],[["P","D1","N3","S'"],["N3","D1"],["P","D1","N3","D1"],["P","D1","N3","S'"]],[["S'","N3","D1","P"],["D1","N3"],["S'","N3","D1","N3"],["S'","N3","D1","P"]],[["N3","D1","P","M1"],["P","D1"],["N3","D1","P","D1"],["N3","D1","P","M1"]],[["D1","P","M1","G3"],["M1","P"],["D1","P","M1","P"],["D1","P","M1","G3"]],[["P","M1","G3","R1"],["G3","M1"],["P","M1","G3","M1"],["P","M1","G3","R1"]],[["M1","G3","R1","S"],["R1","G3"],["M1","G3","R1","G3"],["M1","G3","R1","S"]]], notes: ["S","R1","G3","M1","G3","R1","S","R1","G3","R1","S","R1","G3","M1","R1","G3","M1","P","M1","G3","R1","G3","M1","G3","R1","G3","M1","P","G3","M1","P","D1","P","M1","G3","M1","P","M1","G3","M1","P","D1","M1","P","D1","N3","D1","P","M1","P","D1","P","M1","P","D1","N3","P","D1","N3","S'","N3","D1","P","D1","N3","D1","P","D1","N3","S'","S'","N3","D1","P","D1","N3","S'","N3","D1","N3","S'","N3","D1","P","N3","D1","P","M1","P","D1","N3","D1","P","D1","N3","D1","P","M1","D1","P","M1","G3","M1","P","D1","P","M1","P","D1","P","M1","G3","P","M1","G3","R1","G3","M1","P","M1","G3","M1","P","M1","G3","R1","M1","G3","R1","S","R1","G3","M1","G3","R1","G3","M1","G3","R1","S"] },
+    { title: "Matya", sub: "Chatusra jati \u00b7 10 aksharas \u00b7 I4 O I4", "tala": "I4 0 I4", "dlines": [[["S","R1","G3","R1"],["S","R1"],["S","R1","G3","M1"]],[["R1","G3","M1","G3"],["R1","G3"],["R1","G3","M1","P"]],[["G3","M1","P","M1"],["G3","M1"],["G3","M1","P","D1"]],[["M1","P","D1","P"],["M1","P"],["M1","P","D1","N3"]],[["P","D1","N3","D1"],["P","D1"],["P","D1","N3","S'"]],[["S'","N3","D1","N3"],["S'","N3"],["S'","N3","D1","P"]],[["N3","D1","P","D1"],["N3","D1"],["N3","D1","P","M1"]],[["D1","P","M1","P"],["D1","P"],["D1","P","M1","G3"]],[["P","M1","G3","M1"],["P","M1"],["P","M1","G3","R1"]],[["M1","G3","R1","G3"],["M1","G3"],["M1","G3","R1","S"]]], notes: ["S","R1","G3","R1","S","R1","S","R1","G3","M1","R1","G3","M1","G3","R1","G3","R1","G3","M1","P","G3","M1","P","M1","G3","M1","G3","M1","P","D1","M1","P","D1","P","M1","P","M1","P","D1","N3","P","D1","N3","D1","P","D1","P","D1","N3","S'","S'","N3","D1","N3","S'","N3","S'","N3","D1","P","N3","D1","P","D1","N3","D1","N3","D1","P","M1","D1","P","M1","P","D1","P","D1","P","M1","G3","P","M1","G3","M1","P","M1","P","M1","G3","R1","M1","G3","R1","G3","M1","G3","M1","G3","R1","S"] },
+    { title: "Rupaka", sub: "Chatusra jati \u00b7 6 aksharas \u00b7 O I4", "tala": "0 I4", "dlines": [[["S","R1"],["S","R1","G3","M1"]],[["R1","G3"],["R1","G3","M1","P"]],[["G3","M1"],["G3","M1","P","D1"]],[["M1","P"],["M1","P","D1","N3"]],[["P","D1"],["P","D1","N3","S'"]],[["S'","N3"],["S'","N3","D1","P"]],[["N3","D1"],["N3","D1","P","M1"]],[["D1","P"],["D1","P","M1","G3"]],[["P","M1"],["P","M1","G3","R1"]],[["M1","G3"],["M1","G3","R1","S"]]], notes: ["S","R1","S","R1","G3","M1","R1","G3","R1","G3","M1","P","G3","M1","G3","M1","P","D1","M1","P","M1","P","D1","N3","P","D1","P","D1","N3","S'","S'","N3","S'","N3","D1","P","N3","D1","N3","D1","P","M1","D1","P","D1","P","M1","G3","P","M1","P","M1","G3","R1","M1","G3","M1","G3","R1","S"] },
+    { title: "Jhampa", sub: "Misra jati \u00b7 10 aksharas \u00b7 I7 U O", "tala": "I7 U 0", "dlines": [[["S","R1","G3","S","R1","S","R1"],["G3"],["M1",","]],[["R1","G3","M1","R1","G3","R1","G3"],["M1"],["P",","]],[["G3","M1","P","G3","M1","G3","M1"],["P"],["D1",","]],[["M1","P","D1","M1","P","M1","P"],["D1"],["N3",","]],[["P","D1","N3","P","D1","P","D1"],["N3"],["S'",","]],[["S'","N3","D1","S'","N3","S'","N3"],["D1"],["P",","]],[["N3","D1","P","N3","D1","N3","D1"],["P"],["M1",","]],[["D1","P","M1","D1","P","D1","P"],["M1"],["G3",","]],[["P","M1","G3","P","M1","P","M1"],["G3"],["R1",","]],[["M1","G3","R1","M1","G3","M1","G3"],["R1"],["S",","]]], notes: ["S","R1","G3","S","R1","S","R1","G3","M1",",","R1","G3","M1","R1","G3","R1","G3","M1","P",",","G3","M1","P","G3","M1","G3","M1","P","D1",",","M1","P","D1","M1","P","M1","P","D1","N3",",","P","D1","N3","P","D1","P","D1","N3","S'",",","S'","N3","D1","S'","N3","S'","N3","D1","P",",","N3","D1","P","N3","D1","N3","D1","P","M1",",","D1","P","M1","D1","P","D1","P","M1","G3",",","P","M1","G3","P","M1","P","M1","G3","R1",",","M1","G3","R1","M1","G3","M1","G3","R1","S",","] },
+    { title: "Triputa", sub: "Tisra jati \u00b7 7 aksharas \u00b7 I3 O O", "tala": "I3 0 0", "dlines": [[["S","R1","G3"],["S","R1"],["G3","M1"]],[["R1","G3","M1"],["R1","G3"],["M1","P"]],[["G3","M1","P"],["G3","M1"],["P","D1"]],[["M1","P","D1"],["M1","P"],["D1","N3"]],[["P","D1","N3"],["P","D1"],["N3","S'"]],[["S'","N3","D1"],["S'","N3"],["D1","P"]],[["N3","D1","P"],["N3","D1"],["P","M1"]],[["D1","P","M1"],["D1","P"],["M1","G3"]],[["P","M1","G3"],["P","M1"],["G3","R1"]],[["M1","G3","R1"],["M1","G3"],["R1","S"]]], notes: ["S","R1","G3","S","R1","G3","M1","R1","G3","M1","R1","G3","M1","P","G3","M1","P","G3","M1","P","D1","M1","P","D1","M1","P","D1","N3","P","D1","N3","P","D1","N3","S'","S'","N3","D1","S'","N3","D1","P","N3","D1","P","N3","D1","P","M1","D1","P","M1","D1","P","M1","G3","P","M1","G3","P","M1","G3","R1","M1","G3","R1","M1","G3","R1","S"] },
+    { title: "Ata", sub: "Khanda jati \u00b7 14 aksharas \u00b7 I5 I5 O O", "tala": "I5 I5 0 0", "dlines": [[["S","R1",",","G3",","],["S",",","R1","G3",","],["M1",","],["M1",","]],[["R1","G3",",","M1",","],["R1",",","G3","M1",","],["P",","],["P",","]],[["G3","M1",",","P",","],["G3",",","M1","P",","],["D1",","],["D1",","]],[["M1","P",",","D1",","],["M1",",","P","D1",","],["N3",","],["N3",","]],[["P","D1",",","N3",","],["P",",","D1","N3",","],["S'",","],["S'",","]],[["S'","N3",",","D1",","],["S'",",","N3","D1",","],["P",","],["P",","]],[["N3","D1",",","P",","],["N3",",","D1","P",","],["M1",","],["M1",","]],[["D1","P",",","M1",","],["D1",",","P","M1",","],["G3",","],["G3",","]],[["P","M1",",","G3",","],["P",",","M1","G3",","],["R1",","],["R1",","]],[["M1","G3",",","R1",","],["M1",",","G3","R1",","],["S",","],["S",","]]], notes: ["S","R1",",","G3",",","S",",","R1","G3",",","M1",",","M1",",","R1","G3",",","M1",",","R1",",","G3","M1",",","P",",","P",",","G3","M1",",","P",",","G3",",","M1","P",",","D1",",","D1",",","M1","P",",","D1",",","M1",",","P","D1",",","N3",",","N3",",","P","D1",",","N3",",","P",",","D1","N3",",","S'",",","S'",",","S'","N3",",","D1",",","S'",",","N3","D1",",","P",",","P",",","N3","D1",",","P",",","N3",",","D1","P",",","M1",",","M1",",","D1","P",",","M1",",","D1",",","P","M1",",","G3",",","G3",",","P","M1",",","G3",",","P",",","M1","G3",",","R1",",","R1",",","M1","G3",",","R1",",","M1",",","G3","R1",",","S",",","S",","] },
+    { title: "Eka", sub: "Chatusra jati \u00b7 4 aksharas \u00b7 I4", "tala": "I4", "dlines": [[["S","R1","G3","M1"]],[["R1","G3","M1","P"]],[["G3","M1","P","D1"]],[["M1","P","D1","N3"]],[["P","D1","N3","S'"]],[["S'","N3","D1","P"]],[["N3","D1","P","M1"]],[["D1","P","M1","G3"]],[["P","M1","G3","R1"]],[["M1","G3","R1","S"]]], notes: ["S","R1","G3","M1","R1","G3","M1","P","G3","M1","P","D1","M1","P","D1","N3","P","D1","N3","S'","S'","N3","D1","P","N3","D1","P","M1","D1","P","M1","G3","P","M1","G3","R1","M1","G3","R1","S"] }
   ]
 }
 ,
@@ -376,7 +387,47 @@ function openPattern(i) {
     part.split(/\s+/).forEach(tok => { tok.split("-").forEach(g => { if (g) groups.push(g); }); });
     return groups;
   };
-  if (p.laya) {
+  // Tala popover (coachmark) - singleton
+  let talaPop = null;
+  const closeTalaPop = () => { if (talaPop) { talaPop.remove(); talaPop = null; } };
+  const TALA_LEGEND = '<h4>Tala symbols</h4>' +
+    '<div class="trow"><code>I</code><span class="tdef"><b>Laghu</b> — beats = jati number (I4 = 4, I7 = 7)</span></div>' +
+    '<div class="trow"><code>0</code><span class="tdef"><b>Drutam</b> — 2 beats</span></div>' +
+    '<div class="trow"><code>U</code><span class="tdef"><b>Anudrutam</b> — 1 beat</span></div>';
+  if (p.tala) {
+    // Tala component: tappable boxes + popover legend
+    const angas = p.tala.trim().split(/\s+/);
+    let html = '<div class="tala-wrap"><div class="laya tala-box-click" id="talaBox">' +
+      '<div class="laya-title">Tala</div><div class="laya-parts"><div class="laya-part">';
+    angas.forEach(a => { html += '<span class="laya-box">' + a + '</span>'; });
+    html += '</div></div>';
+    // Beat math
+    const beats = angas.map(a => {
+      const m = a.match(/^I(\d+)$/); if (m) return parseInt(m[1]);
+      if (a === '0') return 2; if (a === 'U') return 1; return 0;
+    });
+    const total = beats.reduce((x, y) => x + y, 0);
+    html += '<div class="laya-legend">' + beats.join(' + ') + ' = ' + total + ' beats</div>';
+    html += '</div></div>';
+    li.innerHTML = html;
+    li.style.display = "block";
+    document.getElementById("talaBox").onclick = (e) => {
+      e.stopPropagation();
+      if (talaPop) { closeTalaPop(); return; }
+      talaPop = document.createElement("div");
+      talaPop.className = "tala-popover";
+      talaPop.innerHTML = TALA_LEGEND;
+      talaPop.onclick = (ev) => ev.stopPropagation();
+      li.querySelector(".tala-wrap").appendChild(talaPop);
+      const dismiss = (ev) => {
+        if (!talaPop || talaPop.contains(ev.target)) return;
+        closeTalaPop();
+        document.removeEventListener("click", dismiss);
+      };
+      setTimeout(() => document.addEventListener("click", dismiss), 0);
+    };
+  } else if (p.laya) {
+    closeTalaPop();
     const parts = p.laya.split(" and ").map(parseLayaPart);
     let html = '<div class="laya-title">Laya</div><div class="laya-parts">';
     parts.forEach((groups, pi) => {
@@ -389,7 +440,7 @@ function openPattern(i) {
     html += '<div class="laya-legend">digits count beats \u00b7 <code>,</code> = hold</div>';
     li.innerHTML = html;
     li.style.display = "block";
-  } else { li.style.display = "none"; }
+  } else { closeTalaPop(); li.style.display = "none"; }
   const row = document.getElementById("swaras");
   row.innerHTML = "";
   row.classList.toggle("grouped", !!p.dlines);
