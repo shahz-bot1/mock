@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P2 · Composition — Swara Builder</title>
+<link rel="stylesheet" href="core.css">
+<style>
+.line { background: var(--panel2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px; margin: 8px 0; }
+.toks { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.tok { padding: 6px 8px; border-radius: 8px; background: var(--panel); border: 1px solid var(--border);
+  font-weight: 700; font-size: 14px; }
+.tok.bar { border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; }
+.tok.hold, .tok.gap { color: var(--muted); }
+.tok.cur { outline: 2px solid var(--warn); }
+.tok.bad { border-color: var(--bad); color: var(--bad); }
+.tok sub { font-size: 9px; color: var(--muted); }
+.sah { color: var(--muted); font-size: 13px; font-style: italic; margin: 6px 2px 0; }
+.sec-h { display: flex; align-items: center; gap: 8px; margin: 14px 0 4px; }
+.sec-h b { font-size: 15px; }
+textarea.sw { width: 100%; min-height: 52px; font-family: ui-monospace, monospace; margin-top: 8px; }
+textarea.ly { width: 100%; min-height: 34px; margin-top: 6px; font-size: 13px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="back" href="index.html">‹ Playground</a>
+  <h1>P2 · Composition<small>geetham-style sections · type swaras, bars auto-mark every 8 beats</small></h1>
+  <span id="themeSlot"></span>
+</header>
+
+<div class="card">
+  <h2>Setup</h2>
+  <div class="controls">
+    <label class="f">Raga<span id="ragaSlot"></span></label>
+    <label class="f">Sa<span id="saSlot"></span></label>
+    <label class="f">Tempo <span><input type="range" id="tempo" min="30" max="120"> <b id="tempoV"></b> bpm</span></label>
+  </div>
+  <div class="controls" style="margin-top:10px">
+    <button class="btn" id="playBtn">▶ Play</button>
+    <button class="btn ghost" id="addCharanam">＋ Charanam</button>
+    <button class="btn ghost" id="demoBtn">Load demo phrase</button>
+  </div>
+  <p class="note">Token format: <b>S R2 G3</b> · stack with <b>+</b> (<b>R2+G3</b>) · hold <b>,</b> · gap <b>–</b> ·
+  low octave <b>.S</b> · high <b>S'</b>. Bar lines appear every 8 beats (Adi avarta).
+  Tokens outside the raga are flagged red but still play.</p>
+</div>
+
+<div id="sections"></div>
+
+<script src="core.js"></script>
+<script>
+"use strict";
+SB.applyTheme("sb-theme");
+document.getElementById("themeSlot").appendChild(SB.themeBtn("sb-theme"));
+
+const store = {
+  data: SB.load("sb-p2", null) || { ragaId:"mohanam", saOffset:0, tempo:60,
+    sections:[ { name:"Pallavi", lines:[ { sw:"", ly:"" } ] } ] },
+  save() { SB.save("sb-p2", this.data); }
+};
+const d = () => store.data;
+
+document.getElementById("ragaSlot").appendChild(SB.ragaSelect(d().ragaId, v => {
+  d().ragaId = v; store.save(); render();
+}));
+document.getElementById("saSlot").appendChild(SB.saSelect(d().saOffset, v => {
+  d().saOffset = v; store.save(); restartIfPlaying();
+}));
+const tempoEl = document.getElementById("tempo"), tempoV = document.getElementById("tempoV");
+tempoEl.value = d().tempo;
+const paintTempo = () => tempoV.textContent = tempoEl.value;
+paintTempo();
+tempoEl.oninput = () => { d().tempo = +tempoEl.value; paintTempo(); store.save(); restartIfPlaying(); };
+
+/* token -> slot */
+function parseToken(tok, ragaSet) {
+  if (tok === ",") return { slot:{ k:"hold" }, ok:true };
+  if (tok === "-" || tok === "–") return { slot:{ k:"gap" }, ok:true };
+  const parts = tok.split("+");
+  const stack = [];
+  for (const p of parts) {
+    let oct = 0, s = p;
+    if (s.startsWith(".")) { oct = -1; s = s.slice(1); }
+    if (s.endsWith("'")) { oct = 1; s = s.slice(0, -1); }
+    const st = s.toUpperCase();
+    if (!SB.SEMI.hasOwnProperty(st)) return { slot:null, ok:false };
+    stack.push({ st, oct });
+  }
+  const inRaga = !ragaSet || stack.every(n => ragaSet.has(n.st));
+  return { slot:{ k:"note", stack }, ok:true, inRaga };
+}
+function parseLine(sw) {
+  const raga = SB.ragaById(d().ragaId);
+  const set = raga ? new Set([...raga.aro, ...raga.ava]) : null;
+  return sw.trim().split(/\s+/).filter(Boolean).map(t => ({ tok:t, ...parseToken(t, set) }));
+}
+
+let chipEls = []; // flat chip list for highlight
+function render() {
+  const host = document.getElementById("sections");
+  host.innerHTML = ""; chipEls = [];
+  d().sections.forEach((sec, si) => {
+    const h = document.createElement("div");
+    h.className = "sec-h";
+    h.innerHTML = `<b>${sec.name}</b><span style="flex:1"></span>`;
+    const addLine = document.createElement("button");
+    addLine.className = "btn ghost"; addLine.textContent = "＋ Line";
+    addLine.onclick = () => { stop(); sec.lines.push({ sw:"", ly:"" }); store.save(); render(); };
+    h.appendChild(addLine);
+    if (si > 1) {
+      const del = document.createElement("button");
+      del.className = "btn danger"; del.textContent = "✕";
+      del.onclick = () => { stop(); d().sections.splice(si, 1); store.save(); render(); };
+      h.appendChild(del);
+    }
+    host.appendChild(h);
+    sec.lines.forEach((ln, li) => {
+      const card = document.createElement("div");
+      card.className = "line";
+      const toks = document.createElement("div");
+      toks.className = "toks";
+      const parsed = parseLine(ln.sw);
+      parsed.forEach((p, ti) => {
+        const el = document.createElement("span");
+        let cls = "tok";
+        if (ti % 8 === 0 && ti > 0) cls += " bar";
+        if (!p.ok) cls += " bad";
+        else if (p.slot.k === "hold") cls += " hold";
+        else if (p.slot.k === "gap") cls += " gap";
+        else if (p.inRaga === false) cls += " bad";
+        el.className = cls;
+        el.innerHTML = p.ok
+          ? (p.slot.k === "note"
+              ? p.slot.stack.map(n => {
+                  const m = n.st.match(/^([A-Z])(\d?)$/);
+                  const dot = n.oct < 0 ? ".".repeat(-n.oct) : "";
+                  const up = n.oct > 0 ? "'".repeat(n.oct) : "";
+                  return dot + m[1] + (m[2] ? "<sub>"+m[2]+"</sub>" : "") + up;
+                }).join("+")
+              : p.tok)
+          : "?";
+        toks.appendChild(el);
+        chipEls.push(el);
+      });
+      card.appendChild(toks);
+      if (ln.ly.trim()) {
+        const s = document.createElement("div");
+        s.className = "sah"; s.textContent = ln.ly;
+        card.appendChild(s);
+      }
+      const sw = document.createElement("textarea");
+      sw.className = "sw"; sw.value = ln.sw; sw.placeholder = "swaras: S R2 G3 , -  (space separated)";
+      sw.oninput = () => { ln.sw = sw.value; store.save(); render(); };
+      card.appendChild(sw);
+      const ly = document.createElement("textarea");
+      ly.className = "ly"; ly.value = ln.ly; ly.placeholder = "sahitya (optional lyric line)";
+      ly.oninput = () => { ln.ly = ly.value; store.save(); render(); };
+      card.appendChild(ly);
+      const delL = document.createElement("button");
+      delL.className = "btn danger"; delL.textContent = "Delete line";
+      delL.style.marginTop = "6px";
+      delL.onclick = () => { stop(); sec.lines.splice(li, 1); store.save(); render(); };
+      card.appendChild(delL);
+      host.appendChild(card);
+    });
+  });
+  const foots = document.querySelectorAll(".foot");
+  foots.forEach((f, i) => { if (i < foots.length - 1) f.remove(); });
+  document.body.appendChild(SB.footer());
+}
+
+/* ---------- playback ---------- */
+const playBtn = document.getElementById("playBtn");
+let player = null, playing = false;
+function stop() {
+  playing = false;
+  if (player) { player.stop(); player = null; }
+  playBtn.textContent = "▶ Play"; playBtn.classList.remove("playing");
+  chipEls.forEach(x => x.classList.remove("cur"));
+}
+function restartIfPlaying() { if (playing) { stop(); playBtn.onclick(); } }
+playBtn.onclick = async () => {
+  if (playing) { stop(); return; }
+  SB.ensureAudio();
+  try { await SB.ensureSamples("samples/harmonium/"); } catch (e) {}
+  const slots = [];
+  d().sections.forEach(sec => sec.lines.forEach(ln =>
+    parseLine(ln.sw).forEach(p => { if (p.ok) slots.push(p.slot); })));
+  if (!slots.length) return;
+  playing = true;
+  playBtn.textContent = "⏹ Stop"; playBtn.classList.add("playing");
+  player = SB.playRows([{ slots }], {
+    beatDur: 60 / d().tempo, saOffset: d().saOffset, loop: false,
+    onSlot: (r, i) => {
+      chipEls.forEach(x => x.classList.remove("cur"));
+      if (chipEls[i]) chipEls[i].classList.add("cur");
+    },
+    onDone: () => stop(),
+  });
+};
+
+document.getElementById("addCharanam").onclick = () => {
+  stop();
+  const n = d().sections.filter(s => s.name.startsWith("Charanam")).length + 1;
+  d().sections.push({ name:"Charanam " + n, lines:[ { sw:"", ly:"" } ] });
+  store.save(); render();
+};
+document.getElementById("demoBtn").onclick = () => {
+  stop();
+  d().sections = [
+    { name:"Pallavi", lines:[
+      { sw:"S R2 G3 P D2 P G3 R2", ly:"(demo phrase — not a real geetham)" },
+      { sw:"S , R2 G3 P - D2 P", ly:"" } ] },
+    { name:"Anupallavi", lines:[ { sw:"", ly:"" } ] },
+  ];
+  store.save(); render();
+};
+
+if (!d().sections.some(s => s.name === "Anupallavi")) {
+  d().sections.splice(1, 0, { name:"Anupallavi", lines:[ { sw:"", ly:"" } ] });
+  store.save();
+}
+render();
+</script>
+</body>
+</html>
