@@ -944,7 +944,7 @@ const RAW_EXPECT = {
     "name": "Mandhra Sthayi Varisai",
     "patterns": [
       {
-        "title": "1 \u00b7 Dheergam anchor, expanding phrases",
+        "title": "1 · Dheergam anchor, expanding phrases",
         "tala": null,
         "head": [
           "S'",
@@ -960,12 +960,11 @@ const RAW_EXPECT = {
         "lineCount": 4,
         "firstLineGroups": [
           4,
-          2,
-          2
+          4
         ]
       },
       {
-        "title": "2 \u00b7 Dheergam anchor, expanding phrases",
+        "title": "2 · Dheergam anchor, expanding phrases",
         "tala": null,
         "head": [
           "S'",
@@ -981,12 +980,11 @@ const RAW_EXPECT = {
         "lineCount": 6,
         "firstLineGroups": [
           4,
-          2,
-          2
+          4
         ]
       },
       {
-        "title": "3 \u00b7 Dheergam anchor, expanding phrases",
+        "title": "3 · Dheergam anchor, expanding phrases",
         "tala": null,
         "head": [
           "S'",
@@ -1002,12 +1000,11 @@ const RAW_EXPECT = {
         "lineCount": 8,
         "firstLineGroups": [
           4,
-          2,
-          2
+          4
         ]
       },
       {
-        "title": "4 \u00b7 Dheergam anchor, expanding phrases",
+        "title": "4 · Dheergam anchor, expanding phrases",
         "tala": null,
         "head": [
           "S'",
@@ -1023,12 +1020,11 @@ const RAW_EXPECT = {
         "lineCount": 10,
         "firstLineGroups": [
           4,
-          2,
-          2
+          4
         ]
       },
       {
-        "title": "5 \u00b7 Dheergam anchor, expanding phrases",
+        "title": "5 · Dheergam anchor, expanding phrases",
         "tala": null,
         "head": [
           "S'",
@@ -1044,8 +1040,7 @@ const RAW_EXPECT = {
         "lineCount": 12,
         "firstLineGroups": [
           4,
-          2,
-          2
+          4
         ]
       }
     ]
