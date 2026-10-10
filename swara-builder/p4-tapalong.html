@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P4 · Tap-Along — Swara Builder</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<header class="top">
+  <a class="back" href="index.html">‹ Playground</a>
+  <h1>P4 · Tap-Along<small>loop plays · tap swara pads in time · taps quantize to the grid</small></h1>
+  <span id="themeSlot"></span>
+</header>
+
+<div class="card">
+  <h2>Loop</h2>
+  <div class="controls">
+    <label class="f">Demo phrase<span id="phraseSlot"></span></label>
+    <label class="f">Sa<span id="saSlot"></span></label>
+    <label class="f">Tempo <span><input type="range" id="tempo" min="40" max="100"> <b id="tempoV"></b> bpm</span></label>
+  </div>
+  <div class="controls" style="margin-top:10px">
+    <button class="btn" id="recBtn">● Start loop + tap</button>
+  </div>
+  <p class="note">The demo phrase loops up to <b>4 cycles</b> (auto-stops). Tap the pads when you hear each
+  swara. On stop, taps snap to the nearest beat — several taps in one beat become a <b>stack</b>,
+  exactly like P1. Cycle <b id="cyc">–</b> · taps <b id="tapN">0</b>.</p>
+</div>
+
+<div class="card">
+  <h2>Swara pads <small id="padRaga" style="text-transform:none"></small></h2>
+  <div class="seg" id="octSeg" style="max-width:340px">
+    <button data-o="-1">low (˙S)</button>
+    <button data-o="0" class="on">middle</button>
+    <button data-o="1">high (S˙)</button>
+  </div>
+  <div class="pads" id="pads"></div>
+</div>
+
+<div class="card" id="resultCard" style="display:none">
+  <h2>Quantized result</h2>
+  <div id="result"></div>
+  <div class="controls" style="margin-top:8px">
+    <button class="btn ghost" id="copyBtn">⧉ Copy JSON</button>
+  </div>
+  <pre class="dump" id="dump" style="display:none"></pre>
+</div>
+
+<script src="core.js"></script>
+<script>
+"use strict";
+SB.applyTheme("sb-theme");
+document.getElementById("themeSlot").appendChild(SB.themeBtn("sb-theme"));
+
+const PHRASES = [
+  { id:"m1", ragaId:"mohanam", name:"Mohanam ascending",
+    beats:["S","R2","G3","P","D2","P","G3","R2"] },
+  { id:"h1", ragaId:"hamsadhvani", name:"Hamsadhvani turn",
+    beats:["S","R2","G3","P","N3","P","G3","R2"] },
+  { id:"s1", ragaId:"shankarabharanam", name:"Shankarabharanam walk",
+    beats:["S","R2","G3","M1","P","M1","G3","R2"] },
+];
+const store = {
+  data: SB.load("sb-p4", null) || { phraseId:"m1", saOffset:0, tempo:60 },
+  save() { SB.save("sb-p4", this.data); }
+};
+const d = () => store.data;
+const phrase = () => PHRASES.find(p => p.id === d().phraseId);
+
+const phraseSel = document.createElement("select");
+phraseSel.innerHTML = PHRASES.map(p => `<option value="${p.id}"${p.id===d().phraseId?" selected":""}>${p.name}</option>`).join("");
+phraseSel.onchange = () => { d().phraseId = phraseSel.value; store.save(); renderPads(); };
+document.getElementById("phraseSlot").appendChild(phraseSel);
+document.getElementById("saSlot").appendChild(SB.saSelect(d().saOffset, v => { d().saOffset = v; store.save(); }));
+const tempoEl = document.getElementById("tempo"), tempoV = document.getElementById("tempoV");
+tempoEl.value = d().tempo;
+const paintTempo = () => tempoV.textContent = tempoEl.value;
+paintTempo();
+tempoEl.oninput = () => { d().tempo = +tempoEl.value; paintTempo(); store.save(); };
+
+let oct = 0;
+document.querySelectorAll("#octSeg button").forEach(b => b.onclick = () => {
+  oct = +b.dataset.o;
+  document.querySelectorAll("#octSeg button").forEach(x => x.classList.toggle("on", x === b));
+});
+function renderPads() {
+  const raga = SB.ragaById(phrase().ragaId);
+  document.getElementById("padRaga").textContent = "· " + raga.name;
+  const host = document.getElementById("pads");
+  host.innerHTML = "";
+  SB.ragaPickerList(raga).forEach(st => {
+    const b = document.createElement("button");
+    b.className = "pad";
+    const m = st.match(/^([A-Z])(\d?)$/);
+    b.innerHTML = m[1] + (m[2] ? "<sub>"+m[2]+"</sub>" : "");
+    b.onclick = () => { b.classList.add("hit"); setTimeout(() => b.classList.remove("hit"), 150); tap(st, oct); };
+    host.appendChild(b);
+  });
+}
+renderPads();
+
+/* ---------- record ---------- */
+const recBtn = document.getElementById("recBtn");
+let playing = false, timers = [], taps = [], t0 = 0, beatDur = 1, stopTimer = null;
+const MAXC = 4;
+function tap(st, o) {
+  if (!playing) return;
+  const absBeat = (SB.ensureAudio().currentTime - t0) / beatDur;
+  taps.push({ absBeat, st, oct:o });
+  document.getElementById("tapN").textContent = taps.length;
+}
+function stop(silent) {
+  playing = false;
+  timers.forEach(clearTimeout); timers = [];
+  if (stopTimer) { clearTimeout(stopTimer); stopTimer = null; }
+  SB.stopAll();
+  recBtn.textContent = "● Start loop + tap"; recBtn.classList.remove("playing");
+  if (!silent) quantize();
+}
+recBtn.onclick = async () => {
+  if (playing) { stop(false); return; }
+  SB.ensureAudio();
+  try { await SB.ensureSamples("samples/harmonium/"); } catch (e) {}
+  document.getElementById("resultCard").style.display = "none";
+  taps = [];
+  document.getElementById("tapN").textContent = "0";
+  playing = true;
+  recBtn.textContent = "⏹ Stop + quantize"; recBtn.classList.add("playing");
+  beatDur = 60 / d().tempo;
+  t0 = SB.ensureAudio().currentTime + 0.15;
+  const ph = phrase();
+  for (let c = 0; c < MAXC; c++) {
+    ph.beats.forEach((st, i) => {
+      const t = t0 + (c * 8 + i) * beatDur;
+      SB.playNote(t, st, 0, d().saOffset, beatDur * 1.4);
+    });
+    timers.push(setTimeout(() => {
+      if (playing) document.getElementById("cyc").textContent = (c + 1) + " / " + MAXC;
+    }, (t0 + c * 8 * beatDur - SB.ensureAudio().currentTime) * 1000));
+  }
+  stopTimer = setTimeout(() => stop(false), (t0 + MAXC * 8 * beatDur - SB.ensureAudio().currentTime) * 1000 + 300);
+};
+
+function quantize() {
+  // group taps -> rows[cycle][beat] = stack (time-ordered)
+  const rows = [];
+  taps.forEach(tp => {
+    const cyc = Math.floor(tp.absBeat / 8);
+    if (cyc < 0 || cyc >= MAXC) return;
+    let beat = Math.round(tp.absBeat - cyc * 8) % 8;
+    if (beat < 0) beat += 8;
+    while (rows.length <= cyc) rows.push({ slots:Array.from({length:8}, SB.emptySlot) });
+    const s = rows[cyc].slots[beat];
+    if (s.k === "empty") rows[cyc].slots[beat] = { k:"note", stack:[{ st:tp.st, oct:tp.oct }] };
+    else if (s.k === "note") s.stack.push({ st:tp.st, oct:tp.oct, _t:tp.absBeat });
+  });
+  rows.forEach(r => r.slots.forEach(s => {
+    if (s.k === "note") s.stack.sort((a, b) => (a._t || 0) - (b._t || 0)).forEach(n => delete n._t);
+  }));
+  const host = document.getElementById("result");
+  host.innerHTML = "";
+  if (!rows.length) { host.innerHTML = `<p class="note">No taps recorded — try again.</p>`; }
+  rows.forEach((row, r) => {
+    const lab = document.createElement("div");
+    lab.className = "rowbar"; lab.innerHTML = `<span class="rn">Cycle ${r+1}</span>`;
+    host.appendChild(lab);
+    const grid = document.createElement("div");
+    grid.className = "srow";
+    row.slots.forEach(s => {
+      const el = document.createElement("div");
+      el.className = "slot" + (s.k === "note" ? " filled" : "");
+      el.innerHTML = SB.slotLabelHTML(s);
+      grid.appendChild(el);
+    });
+    host.appendChild(grid);
+  });
+  document.getElementById("resultCard").style.display = "";
+  document.getElementById("dump").style.display = "none";
+  document.getElementById("copyBtn").onclick = () => {
+    const dump = document.getElementById("dump");
+    dump.style.display = "";
+    dump.textContent = JSON.stringify({ ragaId:phrase().ragaId, rows }, null, 2);
+    navigator.clipboard && navigator.clipboard.writeText(dump.textContent).catch(() => {});
+  };
+  const foots = document.querySelectorAll(".foot");
+  foots.forEach((f, i) => { if (i < foots.length - 1) f.remove(); });
+  document.body.appendChild(SB.footer());
+}
+document.body.appendChild(SB.footer());
+</script>
+</body>
+</html>
