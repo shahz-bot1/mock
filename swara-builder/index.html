@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swara Builder Playground</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<header class="top">
+  <a class="back" href="../">‹ Mocks</a>
+  <h1>Swara Builder Playground<small>4 prototypes · Adi tala only · review + pick a direction</small></h1>
+  <span id="themeSlot"></span>
+</header>
+
+<a class="card idx-card" href="p1-grid.html">
+  <span class="tag">P1 · structured</span>
+  <h2>Adi Grid</h2>
+  <p>Rows of 8 beat-slots (one avarta each). Tap a slot → raga-aware picker. Beats hold stacks
+  (rsN in one beat), holds (,), gaps (–). Adi anga dividers (4+2+2). Playback highlights beats in sync.</p>
+</a>
+
+<a class="card idx-card" href="p2-composition.html">
+  <span class="tag">P2 · notation</span>
+  <h2>Composition</h2>
+  <p>Geetham-style: Pallavi / Anupallavi / Charanams. Type swara tokens (<b>S R2 G3 , –</b>,
+  stacks with <b>+</b>, low octave <b>.S</b>), bars auto-mark every 8 beats, optional sahitya line under.</p>
+</a>
+
+<a class="card idx-card" href="p3-flow.html">
+  <span class="tag">P3 · free-time</span>
+  <h2>Flow Strip</h2>
+  <p>No grid at all. Append swara chips; each chip owns its duration (¼ → 2 beats). For phrases that
+  refuse to sit in 8. Same picker, same playback engine, variable timing.</p>
+</a>
+
+<a class="card idx-card" href="p4-tapalong.html">
+  <span class="tag">P4 · capture</span>
+  <h2>Tap-Along</h2>
+  <p>A demo phrase loops (4 cycles) while you tap swara pads in time. Taps quantize to the beat grid —
+  multiple taps per beat become stacks. Fastest way to capture a phrase you can already hear.</p>
+</a>
+
+<div class="card">
+  <h2>What to compare</h2>
+  <p class="note" style="font-size:13.5px">
+  · <b>Entry speed:</b> which one gets a phrase down fastest?<br>
+  · <b>Grid vs free:</b> does the 8-beat avarta help (P1) or fight you (P3)?<br>
+  · <b>Gaps:</b> every prototype treats gaps as first-class — is that enough?<br>
+  · <b>Stacks:</b> try <b>rsN</b> in one beat on P1/P2 — does the playback subdivision sound right?<br>
+  · The winner gets ported into RagaMentor as the loop swara builder. Mix-and-match is allowed —
+  e.g. P4's capture feeding P1's grid.</p>
+</div>
+
+<script src="core.js"></script>
+<script>
+SB.applyTheme("sb-theme");
+document.getElementById("themeSlot").appendChild(SB.themeBtn("sb-theme"));
+document.body.appendChild(SB.footer());
+</script>
+</body>
+</html>
