@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Varisai Controls Brainstorm</title>
+<style>
+  :root { --bg: #101318; --panel: #171c24; --panel2: #1f2631; --text: #e8ecf2;
+          --muted: #9aa4b2; --border: #2a323e; --accent: #5b9dff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 16px; }
+  h3 { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 8px; }
+  h3:first-child { margin-top: 0; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+  /* Option A: compact dropdown row */
+  .ctl-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .ctl-row:last-child { margin-bottom: 0; }
+  .ctl-row label { font-size: 13px; color: var(--muted); width: 52px; flex: none; }
+  select {
+    flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 12px; font-size: 15px; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239aa4b2' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+  }
+  /* Tempo slider stays */
+  input[type=range] { flex: 1; accent-color: var(--accent); }
+  .bpm { font-size: 13px; color: var(--muted); min-width: 58px; text-align: right; }
+
+  /* Option B: single settings bar */
+  .settings-bar { display: flex; gap: 8px; }
+  .settings-bar select { font-size: 14px; padding: 8px 28px 8px 10px; }
+
+  /* Option C: collapsible */
+  details.settings { background: var(--panel2); border-radius: 9px; }
+  details.settings summary {
+    padding: 10px 12px; font-size: 14px; color: var(--muted); cursor: pointer; list-style: none;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  details.settings summary::-webkit-details-marker { display: none; }
+  details.settings .body { padding: 0 12px 12px; }
+</style>
+</head>
+<body>
+
+<h3>Option A — Dropdowns (one per row)</h3>
+<div class="card">
+  <div class="ctl-row"><label>Sa</label>
+    <select><option>C</option><option>C#</option><option>D</option><option>D#</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>G#</option><option>A</option><option>A#</option><option>B</option></select>
+  </div>
+  <div class="ctl-row"><label>Tempo</label>
+    <input type="range" min="30" max="90" value="60"><span class="bpm">60 BPM</span>
+  </div>
+  <div class="ctl-row"><label>Speed</label>
+    <select><option>1</option><option>2</option><option>4</option><option>8</option></select>
+  </div>
+  <div class="ctl-row"><label>Labels</label>
+    <select><option>S R G</option><option>S R₁ G₃</option></select>
+  </div>
+  <div class="note">Saves ~120px vertical. Two taps to change (open + pick). Tempo stays a slider — dropdown would be worse for 30–90.</div>
+</div>
+
+<h3>Option B — Single compact bar</h3>
+<div class="card">
+  <div class="settings-bar">
+    <select><option>Sa · C</option></select>
+    <select><option>1x</option></select>
+    <select><option>S R G</option></select>
+  </div>
+  <div class="ctl-row" style="margin-top:10px"><label>Tempo</label>
+    <input type="range" min="30" max="90" value="60"><span class="bpm">60 BPM</span>
+  </div>
+  <div class="note">Most compact — one row for Sa/Speed/Labels. Labels are abbreviated. Good if you rarely change these mid-practice.</div>
+</div>
+
+<h3>Option C — Collapsible settings</h3>
+<div class="card">
+  <details class="settings">
+    <summary><span>⚙ Settings</span><span>›</span></summary>
+    <div class="body">
+      <div class="ctl-row"><label>Sa</label>
+        <select><option>C</option><option>C#</option></select>
+      </div>
+      <div class="ctl-row"><label>Speed</label>
+        <select><option>1</option><option>2</option></select>
+      </div>
+      <div class="ctl-row"><label>Labels</label>
+        <select><option>S R G</option></select>
+      </div>
+    </div>
+  </details>
+  <div class="ctl-row" style="margin-top:10px"><label>Tempo</label>
+    <input type="range" min="30" max="90" value="60"><span class="bpm">60 BPM</span>
+  </div>
+  <div class="note">Tempo always visible (most-changed during practice). Sa/Speed/Labels tucked away. One tap to expand.</div>
+</div>
+
+<h3>Keep as-is?</h3>
+<div class="card">
+  <div class="note" style="margin-top:0">Segmented controls are one-tap and show all options. Best if you switch Sa/Speed often mid-practice. The cost is vertical space pushing notation down. If you set-and-forget, dropdowns win.</div>
+</div>
+
+</body>
+</html>
