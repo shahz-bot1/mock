@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coachmark Design Options</title>
+<style>
+  :root {
+    --bg: #1c1c1e; --panel: #2c2c2e; --panel2: #3a3a3c;
+    --text: #f2f2f7; --muted: #98989f; --border: #48484a;
+    --accent: #0a84ff;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 4px; }
+  h2:first-child { margin-top: 0; }
+  .desc { color: var(--muted); font-size: 13px; margin-bottom: 12px; max-width: 560px; }
+  .card { background: var(--panel); border-radius: 14px; padding: 16px; margin-bottom: 16px; max-width: 560px; position: relative; }
+  .card h3 { margin: 0 0 4px; font-size: 15px; }
+  .card .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 12px; }
+
+  /* Tala component (shared) */
+  .tala { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; cursor: pointer; }
+  .tala-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .tala-title .hint { font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 11px; color: var(--accent); }
+  .tala-boxes { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .tala-box { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 5px 9px; font-size: 13px; font-weight: 600; }
+  .tala-beats { font-size: 11.5px; color: var(--muted); margin-top: 7px; }
+
+  /* Option A: Popover */
+  .popover-wrap { position: relative; }
+  .popover { position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; z-index: 10; box-shadow: 0 8px 24px rgba(0,0,0,0.4); animation: pop-in 0.18s ease-out; }
+  .popover::before { content: ''; position: absolute; top: -6px; left: 24px; width: 12px; height: 12px; background: var(--panel2); border-left: 1px solid var(--border); border-top: 1px solid var(--border); transform: rotate(45deg); }
+  .popover h4 { margin: 0 0 8px; font-size: 13px; }
+  .popover .row { display: flex; gap: 8px; font-size: 12.5px; margin-bottom: 6px; align-items: baseline; }
+  .popover .row:last-child { margin-bottom: 0; }
+  .popover code { background: var(--bg); padding: 2px 7px; border-radius: 5px; font-size: 12px; min-width: 28px; text-align: center; }
+  .popover .def { color: var(--muted); }
+  .popover .def b { color: var(--text); font-weight: 600; }
+  @keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+  /* Option B: Bottom sheet */
+  .sheet-demo { position: relative; overflow: hidden; border-radius: 14px; }
+  .sheet-scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 5; }
+  .sheet { position: absolute; bottom: 0; left: 0; right: 0; background: var(--panel2); border-radius: 16px 16px 0 0; padding: 8px 16px 20px; z-index: 10; animation: slide-up 0.25s ease-out; }
+  .sheet .grabber { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 4px auto 12px; }
+  .sheet h4 { margin: 0 0 10px; font-size: 14px; }
+  .sheet .row { display: flex; gap: 10px; font-size: 13px; margin-bottom: 8px; align-items: baseline; }
+  .sheet code { background: var(--bg); padding: 3px 9px; border-radius: 6px; font-size: 13px; min-width: 32px; text-align: center; }
+  .sheet .def { color: var(--muted); }
+  .sheet .def b { color: var(--text); }
+  @keyframes slide-up { from { transform: translateY(100%); } to { transform: none; } }
+  .dimmed { opacity: 0.4; pointer-events: none; }
+
+  /* Option C: Inline expand */
+  .tala-expanded .legend-inline { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; animation: fade-in 0.2s ease-out; }
+  .tala-expanded .legend-inline .row { display: flex; gap: 8px; font-size: 12.5px; margin-bottom: 6px; align-items: baseline; }
+  .tala-expanded .legend-inline .row:last-child { margin-bottom: 0; }
+  .tala-expanded .legend-inline code { background: var(--bg); padding: 2px 7px; border-radius: 5px; font-size: 12px; min-width: 28px; text-align: center; }
+  .tala-expanded .legend-inline .def { color: var(--muted); }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+  .note { color: var(--muted); font-size: 12px; margin-top: 8px; max-width: 560px; }
+  .swara-hint { display: flex; gap: 6px; margin-top: 12px; }
+  .swara-hint .chip { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<h2>Option A: Anchored popover</h2>
+<p class="desc">Tap tala → small bubble appears below with arrow. Tap outside or tala again to dismiss. Context stays visible.</p>
+<div class="card">
+  <h3>Dhruva Alankaram</h3>
+  <div class="sub">Chatushra jati · 14 beats</div>
+  <div class="popover-wrap">
+    <div class="tala">
+      <div class="tala-title">Tala <span class="hint">tap for legend</span></div>
+      <div class="tala-boxes">
+        <span class="tala-box">I4</span><span class="tala-box">0</span><span class="tala-box">I4</span><span class="tala-box">I4</span>
+      </div>
+      <div class="tala-beats">4 + 2 + 4 + 4 = 14 beats</div>
+    </div>
+    <div class="popover">
+      <h4>Tala symbols</h4>
+      <div class="row"><code>I</code><span class="def"><b>Laghu</b> — beats = jati number (I4 = 4, I7 = 7)</span></div>
+      <div class="row"><code>0</code><span class="def"><b>Drutam</b> — 2 beats</span></div>
+      <div class="row"><code>U</code><span class="def"><b>Anudrutam</b> — 1 beat</span></div>
+    </div>
+  </div>
+  <div class="swara-hint"><span class="chip">S</span><span class="chip">R</span><span class="chip">G</span><span class="chip">M</span></div>
+</div>
+
+<h2>Option B: Bottom sheet</h2>
+<p class="desc">Tap tala → sheet slides up from bottom with grabber. Swipe down or tap scrim to dismiss. Roomy, familiar iOS pattern.</p>
+<div class="card sheet-demo" style="min-height: 340px;">
+  <h3>Dhruva Alankaram</h3>
+  <div class="sub">Chatushra jati · 14 beats</div>
+  <div class="dimmed">
+    <div class="tala">
+      <div class="tala-title">Tala</div>
+      <div class="tala-boxes">
+        <span class="tala-box">I4</span><span class="tala-box">0</span><span class="tala-box">I4</span><span class="tala-box">I4</span>
+      </div>
+    </div>
+    <div class="swara-hint"><span class="chip">S</span><span class="chip">R</span><span class="chip">G</span><span class="chip">M</span></div>
+  </div>
+  <div class="sheet-scrim"></div>
+  <div class="sheet">
+    <div class="grabber"></div>
+    <h4>Tala symbols</h4>
+    <div class="row"><code>I</code><span class="def"><b>Laghu</b> — a beat with finger counts. Beats = jati: Tisra 3, Chatushra 4, Khanda 5, Misra 7, Sankeerna 9</span></div>
+    <div class="row"><code>0</code><span class="def"><b>Drutam</b> — 2 beats (tap + wave)</span></div>
+    <div class="row"><code>U</code><span class="def"><b>Anudrutam</b> — 1 beat (single tap)</span></div>
+  </div>
+</div>
+
+<h2>Option C: Inline expand</h2>
+<p class="desc">Tap tala → card expands in place to reveal legend. Tap again to collapse. No overlay, no positioning logic.</p>
+<div class="card">
+  <h3>Dhruva Alankaram</h3>
+  <div class="sub">Chatushra jati · 14 beats</div>
+  <div class="tala tala-expanded">
+    <div class="tala-title">Tala <span class="hint">tap to collapse</span></div>
+    <div class="tala-boxes">
+      <span class="tala-box">I4</span><span class="tala-box">0</span><span class="tala-box">I4</span><span class="tala-box">I4</span>
+    </div>
+    <div class="tala-beats">4 + 2 + 4 + 4 = 14 beats</div>
+    <div class="legend-inline">
+      <div class="row"><code>I</code><span class="def"><b>Laghu</b> — beats = jati number</span></div>
+      <div class="row"><code>0</code><span class="def"><b>Drutam</b> — 2 beats</span></div>
+      <div class="row"><code>U</code><span class="def"><b>Anudrutam</b> — 1 beat</span></div>
+    </div>
+  </div>
+  <div class="swara-hint"><span class="chip">S</span><span class="chip">R</span><span class="chip">G</span><span class="chip">M</span></div>
+</div>
+
+<p class="note">Static mocks — tap interactions not wired. Option A keeps the most context visible; B is roomiest; C is simplest to build.</p>
+
+</body>
+</html>
