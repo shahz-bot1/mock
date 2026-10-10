@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.11-1";
+  const BUILD_VERSION = "2026.10.11-2";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -27,7 +27,9 @@ const SB = (() => {
       aro:["S","R2","G2","M1","D2"],           ava:["S","D2","M1","G2","R2"] },
     { id:"bhairavi",         name:"Bhairavi",
       aro:["S","R2","G2","M1","P","D2","N2"],  ava:["S","N2","D1","P","M1","G2","R2"] },
-  ];
+    { id:"aanandabhairavi",  name:"Aananda Bhairavi",
+      aro:["S","G2","R2","G2","M1","P","D2","P","N2"], ava:["S","N2","D2","P","M1","G2","R2"] },
+  ]; // Aananda Bhairavi arohana/avarohana per srgm.info Geeta #11 (research 2026-10-11)
   const ragaById = id => RAGAS.find(r => r.id === id) || null;
   /* picker order: arohana order (dedup); full pitch set = union of aro+ava */
   const ragaPickerList = raga => {
