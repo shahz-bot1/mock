@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P3 · Flow Strip — Swara Builder</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<header class="top">
+  <a class="back" href="index.html">‹ Playground</a>
+  <h1>P3 · Flow Strip<small>no grid — append swaras, each chip owns its duration</small></h1>
+  <span id="themeSlot"></span>
+</header>
+
+<div class="card">
+  <h2>Setup</h2>
+  <div class="controls">
+    <label class="f">Raga<span id="ragaSlot"></span></label>
+    <label class="f">Sa<span id="saSlot"></span></label>
+    <label class="f">Beat <span><input type="range" id="tempo" min="30" max="120"> <b id="tempoV"></b> bpm</span></label>
+  </div>
+  <div class="controls" style="margin-top:10px">
+    <button class="btn" id="playBtn">▶ Play</button>
+    <button class="btn ghost" id="addBtn">＋ Append swara</button>
+    <button class="btn ghost" id="addGap">＋ Gap</button>
+    <button class="btn ghost" id="addHold">＋ Hold ,</button>
+    <button class="btn danger" id="clearBtn">Clear</button>
+  </div>
+  <p class="note">Tap a chip to edit it: cycle its duration (¼ → ½ → 1 → 2 beats), stack more swaras,
+  move or delete. Total beats: <b id="totBeats">0</b>. This is the free-time answer to P1's grid —
+  nothing is forced into 8.</p>
+</div>
+
+<div class="card">
+  <h2>Phrase</h2>
+  <div class="strip" id="strip"></div>
+</div>
+
+<div class="card" id="actionCard" style="display:none">
+  <h2>Chip <span id="acNum"></span></h2>
+  <div class="controls" id="actionBar"></div>
+</div>
+
+<script src="core.js"></script>
+<script>
+"use strict";
+SB.applyTheme("sb-theme");
+document.getElementById("themeSlot").appendChild(SB.themeBtn("sb-theme"));
+
+const store = {
+  data: SB.load("sb-p3", null) || { ragaId:"mohanam", saOffset:0, tempo:60, chips:[] },
+  save() { SB.save("sb-p3", this.data); }
+};
+const d = () => store.data;
+const DURS = [0.25, 0.5, 1, 2];
+const durLabel = b => b === 1 ? "1 beat" : b === 0.5 ? "½ beat" : b === 0.25 ? "¼ beat" : b + " beats";
+
+document.getElementById("ragaSlot").appendChild(SB.ragaSelect(d().ragaId, v => { d().ragaId = v; store.save(); }));
+document.getElementById("saSlot").appendChild(SB.saSelect(d().saOffset, v => { d().saOffset = v; store.save(); restartIfPlaying(); }));
+const tempoEl = document.getElementById("tempo"), tempoV = document.getElementById("tempoV");
+tempoEl.value = d().tempo;
+const paintTempo = () => tempoV.textContent = tempoEl.value;
+paintTempo();
+tempoEl.oninput = () => { d().tempo = +tempoEl.value; paintTempo(); store.save(); restartIfPlaying(); };
+
+let sel = null;
+function render() {
+  const host = document.getElementById("strip");
+  host.innerHTML = "";
+  let tot = 0;
+  d().chips.forEach((c, i) => {
+    tot += c.beats;
+    const el = document.createElement("div");
+    el.className = "fchip" + (c.k === "gap" ? " gapc" : c.k === "hold" ? " holdc" : "") + (sel === i ? " cur" : "");
+    el.innerHTML = (c.k === "note" ? SB.slotLabelHTML({ k:"note", stack:c.stack })
+                    : c.k === "hold" ? "," : "–") +
+      `<span class="dur">${durLabel(c.beats)}</span>`;
+    el.onclick = () => { sel = (sel === i ? null : i); render(); };
+    host.appendChild(el);
+  });
+  document.getElementById("totBeats").textContent = tot;
+  const foots = document.querySelectorAll(".foot");
+  foots.forEach((f, i) => { if (i < foots.length - 1) f.remove(); });
+  document.body.appendChild(SB.footer());
+  renderActionBar();
+}
+
+function addChip(chip) { stop(); d().chips.push(chip); store.save(); render(); }
+document.getElementById("addBtn").onclick = () =>
+  SB.openPicker({ title:"Append swara", ragaId:d().ragaId, onPick: p => {
+    if (p.kind === "swara") addChip({ k:"note", stack:[{ st:p.st, oct:p.oct }], beats:1 });
+    else if (p.kind === "hold") addChip({ k:"hold", beats:1 });
+    else if (p.kind === "gap") addChip({ k:"gap", beats:1 });
+  }});
+document.getElementById("addGap").onclick = () => addChip({ k:"gap", beats:1 });
+document.getElementById("addHold").onclick = () => addChip({ k:"hold", beats:1 });
+document.getElementById("clearBtn").onclick = () => {
+  if (!confirm("Clear phrase?")) return;
+  stop(); d().chips = []; sel = null; store.save(); render();
+};
+
+function renderActionBar() {
+  const card = document.getElementById("actionCard");
+  if (sel == null || !d().chips[sel]) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const c = d().chips[sel];
+  document.getElementById("acNum").textContent = `#${sel + 1}`;
+  const bar = document.getElementById("actionBar");
+  bar.innerHTML = "";
+  const mk = (label, fn, cls) => {
+    const b = document.createElement("button");
+    b.className = "btn " + (cls || "ghost"); b.textContent = label;
+    b.onclick = fn; bar.appendChild(b);
+  };
+  mk("⏱ " + durLabel(c.beats), () => {
+    c.beats = DURS[(DURS.indexOf(c.beats) + 1) % DURS.length];
+    store.save(); render();
+  });
+  if (c.k === "note") {
+    mk("＋ Stack", () => SB.openPicker({ title:"Stack onto chip", ragaId:d().ragaId,
+      onPick: p => { if (p.kind === "swara") { c.stack.push({ st:p.st, oct:p.oct }); store.save(); render(); } } }));
+    mk("Replace", () => SB.openPicker({ title:"Replace chip", ragaId:d().ragaId,
+      onPick: p => { if (p.kind === "swara") { c.stack = [{ st:p.st, oct:p.oct }]; store.save(); render(); } } }));
+  }
+  mk("◀", () => { if (sel > 0) { const a = d().chips; [a[sel-1], a[sel]] = [a[sel], a[sel-1]]; sel--; store.save(); render(); } });
+  mk("▶", () => { if (sel < d().chips.length - 1) { const a = d().chips; [a[sel+1], a[sel]] = [a[sel], a[sel+1]]; sel++; store.save(); render(); } });
+  mk("Delete", () => { d().chips.splice(sel, 1); sel = null; store.save(); render(); }, "danger");
+  mk("✕", () => { sel = null; render(); });
+}
+
+/* ---------- playback (variable durations) ---------- */
+const playBtn = document.getElementById("playBtn");
+let playing = false, timers = [];
+function stop() {
+  playing = false;
+  timers.forEach(clearTimeout); timers = [];
+  SB.stopAll();
+  playBtn.textContent = "▶ Play"; playBtn.classList.remove("playing");
+  document.querySelectorAll(".fchip.cur").forEach(x => x.classList.remove("cur"));
+}
+function restartIfPlaying() { if (playing) { stop(); playBtn.onclick(); } }
+playBtn.onclick = async () => {
+  if (playing) { stop(); return; }
+  if (!d().chips.length) return;
+  SB.ensureAudio();
+  try { await SB.ensureSamples("samples/harmonium/"); } catch (e) {}
+  playing = true;
+  playBtn.textContent = "⏹ Stop"; playBtn.classList.add("playing");
+  const beat = 60 / d().tempo, t0 = SB.ensureAudio().currentTime + 0.1;
+  const chips = [...document.querySelectorAll(".fchip")];
+  // expand: holds extend previous sounding chip
+  const evs = [];
+  let pending = null;
+  const flush = () => { if (pending) { evs.push(pending); pending = null; } };
+  let t = t0, idx = 0;
+  d().chips.forEach(c => {
+    if (c.k === "hold") { if (pending) pending.dur += c.beats * beat; t += c.beats * beat; return; }
+    flush();
+    if (c.k === "note") pending = { chip:c, idx, t, dur:c.beats * beat };
+    t += c.beats * beat; idx++;
+  });
+  flush();
+  evs.forEach(ev => {
+    const n = ev.chip.stack.length;
+    ev.chip.stack.forEach((note, si) => {
+      const st = ev.t + si * (ev.dur / n);
+      const sub = ev.dur / n;
+      SB.playNote(st, note.st, note.oct, d().saOffset, sub + Math.min(0.28, sub * 0.7));
+    });
+    timers.push(setTimeout(() => {
+      if (!playing) return;
+      chips.forEach(x => x.classList.remove("cur"));
+      const ci = d().chips.indexOf(ev.chip);
+      if (chips[ci]) chips[ci].classList.add("cur");
+    }, (ev.t - t0) * 1000));
+  });
+  timers.push(setTimeout(() => stop(), (t - t0) * 1000 + 400));
+};
+
+render();
+</script>
+</body>
+</html>
