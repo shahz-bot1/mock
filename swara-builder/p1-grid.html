@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P1 · Adi Grid — Swara Builder</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<header class="top">
+  <a class="back" href="index.html">‹ Playground</a>
+  <h1>P1 · Adi Grid<small>8-beat avarta rows · tap a slot to fill · stacks for fast phrases</small></h1>
+  <span id="themeSlot"></span>
+</header>
+
+<div class="card">
+  <h2>Setup</h2>
+  <div class="controls">
+    <label class="f">Raga<span id="ragaSlot"></span></label>
+    <label class="f">Sa<span id="saSlot"></span></label>
+    <label class="f">Tempo <span><input type="range" id="tempo" min="30" max="120" step="1"> <b id="tempoV"></b> bpm</span></label>
+    <label class="f"><span style="height:18px"></span><span><input type="checkbox" id="loop"> loop</span></label>
+  </div>
+  <div class="controls" style="margin-top:10px">
+    <button class="btn" id="playBtn">▶ Play</button>
+    <button class="btn ghost" id="addRow">＋ Add row</button>
+    <button class="btn ghost" id="exportBtn">⇪ Export</button>
+    <button class="btn danger" id="clearBtn">Clear</button>
+  </div>
+  <p class="note">Picker offers only the raga's swaras. A beat can hold a <b>stack</b> (rsN) — playback
+  subdivides the beat equally with a short legato tail. <b>,</b> extends the previous note through the
+  beat, <b>–</b> is a silent gap. Thin dividers mark Adi tala angas: laghu 4 + dhrutam 2 + dhrutam 2.</p>
+</div>
+
+<div id="rows"></div>
+<div class="card" id="actionCard" style="display:none">
+  <h2>Beat <span id="abNum"></span></h2>
+  <div class="controls" id="actionBar"></div>
+</div>
+
+<script src="core.js"></script>
+<script>
+"use strict";
+SB.applyTheme("sb-theme");
+document.getElementById("themeSlot").appendChild(SB.themeBtn("sb-theme"));
+
+const store = {
+  data: SB.load("sb-p1", null) || { ragaId:"mohanam", saOffset:0, tempo:60, loop:true,
+    rows:[{ slots:Array.from({length:8}, SB.emptySlot) }] },
+  save() { SB.save("sb-p1", this.data); }
+};
+const d = () => store.data;
+
+document.getElementById("ragaSlot").appendChild(SB.ragaSelect(d().ragaId, v => {
+  d().ragaId = v; store.save();
+}));
+document.getElementById("saSlot").appendChild(SB.saSelect(d().saOffset, v => {
+  d().saOffset = v; store.save(); restartIfPlaying();
+}));
+const tempoEl = document.getElementById("tempo"), tempoV = document.getElementById("tempoV");
+tempoEl.value = d().tempo;
+const paintTempo = () => tempoV.textContent = tempoEl.value;
+paintTempo();
+tempoEl.oninput = () => { d().tempo = +tempoEl.value; paintTempo(); store.save(); restartIfPlaying(); };
+const loopEl = document.getElementById("loop");
+loopEl.checked = !!d().loop;
+loopEl.onchange = () => { d().loop = loopEl.checked; store.save(); };
+
+let sel = null; // {row, slot}
+function render() {
+  const host = document.getElementById("rows");
+  host.innerHTML = "";
+  d().rows.forEach((row, r) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    const bar = document.createElement("div");
+    bar.className = "rowbar";
+    bar.innerHTML = `<span class="rn">Row ${r+1} · avarta</span><span class="sp"></span>`;
+    const del = document.createElement("button");
+    del.className = "btn danger"; del.textContent = "Delete row";
+    del.onclick = () => { stop(); d().rows.splice(r,1);
+      if (!d().rows.length) d().rows.push({ slots:Array.from({length:8}, SB.emptySlot) });
+      store.save(); render(); };
+    bar.appendChild(del);
+    card.appendChild(bar);
+    const grid = document.createElement("div");
+    grid.className = "srow";
+    row.slots.forEach((s, i) => {
+      const el = document.createElement("div");
+      el.className = "slot" +
+        (s.k === "note" ? " filled" : s.k === "hold" ? " hold" : s.k === "gap" ? " gap" : "") +
+        (sel && sel.row === r && sel.slot === i ? " cur" : "");
+      el.innerHTML = SB.slotLabelHTML(s) || (s.k === "empty" ? "+" : "");
+      if (i === 3 || i === 5) el.style.borderRight = "2px solid var(--accent)";
+      el.onclick = () => onSlotTap(r, i);
+      grid.appendChild(el);
+    });
+    card.appendChild(grid);
+    const anga = document.createElement("div");
+    anga.className = "anga";
+    const labels = ["laghu","","","","dhrutam","","dhrutam",""];
+    anga.innerHTML = labels.map(l => `<span>${l}</span>`).join("");
+    card.appendChild(anga);
+    host.appendChild(card);
+  });
+  document.body.appendChild(SB.footer());
+  // keep single footer
+  const foots = document.querySelectorAll(".foot");
+  foots.forEach((f, i) => { if (i < foots.length - 1) f.remove(); });
+  renderActionBar();
+}
+
+function onSlotTap(r, i) {
+  const s = d().rows[r].slots[i];
+  if (s.k === "empty") {
+    sel = null;
+    SB.openPicker({ title:`Row ${r+1} · beat ${i+1}`, ragaId:d().ragaId, onPick: p => {
+      applyPick(r, i, p, false); } });
+  } else {
+    sel = (sel && sel.row === r && sel.slot === i) ? null : { row:r, slot:i };
+  }
+  render();
+}
+
+function applyPick(r, i, p, stack) {
+  const s = d().rows[r].slots[i];
+  if (p.kind === "clear") d().rows[r].slots[i] = SB.emptySlot();
+  else if (p.kind === "hold") d().rows[r].slots[i] = { k:"hold" };
+  else if (p.kind === "gap") d().rows[r].slots[i] = { k:"gap" };
+  else if (p.kind === "swara") {
+    if (stack && s.k === "note") s.stack.push({ st:p.st, oct:p.oct });
+    else d().rows[r].slots[i] = { k:"note", stack:[{ st:p.st, oct:p.oct }] };
+  }
+  store.save(); render();
+}
+
+function renderActionBar() {
+  const card = document.getElementById("actionCard");
+  if (!sel) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const { row:r, slot:i } = sel;
+  const s = d().rows[r].slots[i];
+  document.getElementById("abNum").textContent = `${r+1} · ${i+1}`;
+  const bar = document.getElementById("actionBar");
+  bar.innerHTML = "";
+  const mk = (label, fn, cls) => {
+    const b = document.createElement("button");
+    b.className = "btn " + (cls || "ghost"); b.textContent = label;
+    b.onclick = fn; bar.appendChild(b);
+  };
+  if (s.k === "note") {
+    mk("＋ Stack swara", () => SB.openPicker({ title:`Beat ${i+1} · add to stack`, ragaId:d().ragaId,
+      onPick: p => { if (p.kind === "swara") applyPick(r, i, p, true); else applyPick(r, i, p, false); } }));
+    mk("Replace", () => SB.openPicker({ title:`Beat ${i+1} · replace`, ragaId:d().ragaId,
+      onPick: p => applyPick(r, i, p, false) }));
+  } else {
+    mk("Fill swara", () => SB.openPicker({ title:`Beat ${i+1}`, ragaId:d().ragaId,
+      onPick: p => applyPick(r, i, p, false) }));
+  }
+  mk("Hold ,", () => applyPick(r, i, { kind:"hold" }, false));
+  mk("Gap –", () => applyPick(r, i, { kind:"gap" }, false));
+  mk("Clear", () => { sel = null; applyPick(r, i, { kind:"clear" }, false); });
+  mk("✕", () => { sel = null; render(); });
+}
+
+/* ---------- playback ---------- */
+const playBtn = document.getElementById("playBtn");
+let player = null, playing = false;
+function stop() {
+  playing = false;
+  if (player) { player.stop(); player = null; }
+  playBtn.textContent = "▶ Play";
+  playBtn.classList.remove("playing");
+  document.querySelectorAll(".slot.cur").forEach(x => x.classList.remove("cur"));
+}
+function restartIfPlaying() { if (playing) { stop(); playBtn.onclick(); } }
+playBtn.onclick = async () => {
+  if (playing) { stop(); return; }
+  SB.ensureAudio();
+  try { await SB.ensureSamples("samples/harmonium/"); } catch (e) {}
+  playing = true;
+  playBtn.textContent = "⏹ Stop"; playBtn.classList.add("playing");
+  const beatDur = 60 / d().tempo;
+  const grids = [...document.querySelectorAll("#rows .srow")];
+  player = SB.playRows(d().rows, {
+    beatDur, saOffset: d().saOffset, loop: d().loop,
+    keepPlaying: () => playing,
+    onSlot: (r, i) => {
+      document.querySelectorAll(".slot.cur").forEach(x => x.classList.remove("cur"));
+      const g = grids[r];
+      if (g && g.children[i]) g.children[i].classList.add("cur");
+    },
+    onClear: () => document.querySelectorAll(".slot.cur").forEach(x => x.classList.remove("cur")),
+    onDone: () => stop(),
+  });
+};
+
+document.getElementById("addRow").onclick = () => {
+  stop(); d().rows.push({ slots:Array.from({length:8}, SB.emptySlot) });
+  store.save(); render();
+};
+document.getElementById("clearBtn").onclick = () => {
+  if (!confirm("Clear all rows?")) return;
+  stop(); d().rows = [{ slots:Array.from({length:8}, SB.emptySlot) }];
+  store.save(); render();
+};
+document.getElementById("exportBtn").onclick = () => {
+  const blob = new Blob([JSON.stringify(d(), null, 2)], { type:"application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "swara-grid.json"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+
+render();
+</script>
+</body>
+</html>
