@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Option B Variants</title>
+<style>
+  :root { --bg: #101318; --panel: #171c24; --panel2: #1f2631; --text: #e8ecf2;
+          --muted: #9aa4b2; --border: #2a323e; --accent: #5b9dff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 16px; }
+  h3 { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 8px; }
+  h3:first-child { margin-top: 0; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+  .note b { color: var(--text); }
+  select {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 28px 10px 12px; font-size: 15px; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239aa4b2' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    min-width: 0;
+  }
+  .bar { display: flex; gap: 8px; }
+  .bar select { flex: 1; }
+  .ctl-row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  .ctl-row label { font-size: 13px; color: var(--muted); width: 52px; flex: none; }
+  input[type=range] { flex: 1; accent-color: var(--accent); }
+  .bpm { font-size: 13px; color: var(--muted); min-width: 58px; text-align: right; }
+  /* B2: labeled */
+  .labeled { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .labeled span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .labeled select { width: 100%; }
+  /* B4: weighted */
+  .bar .w-sa { flex: 1.4; } .bar .w-sp { flex: 1; } .bar .w-lb { flex: 1.2; }
+</style>
+</head>
+<body>
+
+<h3>B1 — Value only (most compact)</h3>
+<div class="card">
+  <div class="bar">
+    <select><option>C</option><option>C#</option><option>D</option></select>
+    <select><option>1</option><option>2</option><option>4</option><option>8</option></select>
+    <select><option>S R G</option><option>S R₁ G₃</option></select>
+  </div>
+  <div class="ctl-row"><label>Tempo</label><input type="range" min="30" max="90" value="60"><span class="bpm">60 BPM</span></div>
+  <div class="note"><b>Pro:</b> Minimal. <b>Con:</b> "C", "1", "S R G" alone may not be self-explanatory. New users might not know what "1" means.</div>
+</div>
+
+<h3>B2 — Small label above each</h3>
+<div class="card">
+  <div class="bar">
+    <div class="labeled"><span>Sa</span><select><option>C</option><option>C#</option></select></div>
+    <div class="labeled"><span>Speed</span><select><option>1</option><option>2</option></select></div>
+    <div class="labeled"><span>Labels</span><select><option>S R G</option></select></div>
+  </div>
+  <div class="ctl-row"><label>Tempo</label><input type="range" min="30" max="90" value="60"><span class="bpm">60 BPM</span></div>
+  <div class="note"><b>Pro:</b> Self-explanatory. <b>Con:</b> Taller than B1 (~20px more). Labels take space.</div>
+</div>
+
+<h3>B3 — Prefix in the value ("Sa · C")</h3>
+<div class="card">
+  <div class="bar">
+    <select><option>Sa · C</option><option>Sa · C#</option></select>
+    <select><option>1x</option><option>2x</option><option>4x</option><option>8x</option></select>
+    <select><option>S R G</option><option>S R₁ G₃</option></select>
+  </div>
+  <div class="ctl-row"><label>Tempo</label><input type="range" min="30" max="90" value="60"><span class="bpm">60 BPM</span></div>
+  <div class="note"><b>Pro:</b> Single row, self-explanatory. <b>Con:</b> "Sa · C" is wider — less room for others. Speed shows "1x" which is clearer than "1".</div>
+</div>
+
+<h3>B4 — Weighted widths (Sa wider)</h3>
+<div class="card">
+  <div class="bar">
+    <select class="w-sa"><option>Sa · C</option></select>
+    <select class="w-sp"><option>1x</option></select>
+    <select class="w-lb"><option>S R G</option></select>
+  </div>
+  <div class="ctl-row"><label>Tempo</label><input type="range" min="30" max="90" value="60"><span class="bpm">60 BPM</span></div>
+  <div class="note"><b>Pro:</b> Sa gets more room for "Sa · C#" etc. <b>Con:</b> Slightly less balanced visually.</div>
+</div>
+
+<h3>Questions</h3>
+<div class="card">
+  <div class="note" style="margin-top:0">
+    1. <b>Speed labels:</b> "1", "2", "4", "8" (current) or "1x", "2x", "4x", "8x" (clearer)?<br>
+    2. <b>Labels options:</b> "S R G" / "S R₁ G₃" or "Basic" / "Full"?<br>
+    3. <b>Sa format:</b> Just "C" or "Sa · C"?<br>
+    4. <b>Tempo:</b> Keep the "Tempo" label + slider, or also compact it?
+  </div>
+</div>
+
+</body>
+</html>
