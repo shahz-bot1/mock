@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson Navigator Brainstorm</title>
+<style>
+  :root { --bg: #101318; --panel: #171c24; --panel2: #1f2631; --text: #e8ecf2;
+          --muted: #9aa4b2; --border: #2a323e; --accent: #5b9dff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 16px; }
+  h3 { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 8px; }
+  h3:first-child { margin-top: 0; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+  .note b { color: var(--text); }
+  /* Mock player header */
+  .phead { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .backbtn { background: none; border: none; color: var(--accent); font-size: 15px; padding: 8px; }
+  .ptitle { font-size: 17px; font-weight: 600; flex: 1; }
+  select.navsel {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 9px; padding: 8px 28px 8px 12px; font-size: 14px; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239aa4b2' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    max-width: 160px;
+  }
+  /* Breadcrumb */
+  .crumbs { display: flex; align-items: center; gap: 6px; font-size: 14px; margin-bottom: 12px; flex-wrap: wrap; }
+  .crumbs a { color: var(--accent); text-decoration: none; }
+  .crumbs span.sep { color: var(--muted); }
+  .crumbs b { color: var(--text); }
+  /* Bottom tabs */
+  .ltabs { display: flex; gap: 4px; overflow-x: auto; padding: 8px 0; margin-bottom: 12px;
+           border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .ltabs button { flex: none; background: var(--panel2); border: 1px solid var(--border); color: var(--muted);
+                  border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+  .ltabs button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  /* Prev/Next */
+  .pnrow { display: flex; gap: 8px; margin-bottom: 12px; }
+  .pnrow button { flex: 1; background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+                  border-radius: 9px; padding: 10px; font-size: 14px; }
+  /* Swipe hint */
+  .swipehint { text-align: center; color: var(--muted); font-size: 12px; padding: 12px;
+               border: 1px dashed var(--border); border-radius: 9px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<h3>Option A — Lesson dropdown in player header</h3>
+<div class="card">
+  <div class="phead">
+    <button class="backbtn">‹</button>
+    <div class="ptitle">Sarali · 5</div>
+    <select class="navsel">
+      <option>Sarali Varisai</option><option>Janta Varisai</option><option>Dhattu Varisai</option>
+      <option>Alankarams</option><option>Mel Sthayi</option><option>Madhya Sthayi</option><option>Mandhra Sthayi</option>
+    </select>
+  </div>
+  <div class="note"><b>Pro:</b> One tap to switch lessons from anywhere in the player. Compact. <b>Con:</b> Hides the lesson list; two taps (open + select).</div>
+</div>
+
+<h3>Option B — Breadcrumb navigation</h3>
+<div class="card">
+  <div class="crumbs">
+    <a>Lessons</a><span class="sep">›</span><a>Sarali Varisai</a><span class="sep">›</span><b>Pattern 5</b>
+  </div>
+  <div class="note"><b>Pro:</b> Shows where you are. Tap "Lessons" to go back, tap "Sarali" to see pattern list. <b>Con:</b> Still requires going back to switch lessons — doesn't solve the core problem alone.</div>
+</div>
+
+<h3>Option C — Horizontal lesson tabs</h3>
+<div class="card">
+  <div class="ltabs">
+    <button class="on">Sarali</button><button>Janta</button><button>Dhattu</button><button>Alankaram</button>
+    <button>Mel</button><button>Madhya</button><button>Mandhra</button>
+  </div>
+  <div class="note"><b>Pro:</b> All lessons visible, one tap to switch. <b>Con:</b> Takes vertical space. Names abbreviated.</div>
+</div>
+
+<h3>Option D — Prev/Next lesson buttons</h3>
+<div class="card">
+  <div class="pnrow">
+    <button>‹ Janta</button>
+    <button>Mandhra ›</button>
+  </div>
+  <div class="note"><b>Pro:</b> Simple, good for sequential practice (Sarali → Janta → Dhattu...). <b>Con:</b> Slow to jump from Sarali to Mandhra (6 taps).</div>
+</div>
+
+<h3>Option E — Swipe gestures</h3>
+<div class="card">
+  <div class="swipehint">← Swipe left/right on the pattern area to switch lessons →</div>
+  <div class="note"><b>Pro:</b> No UI chrome, gesture-based. <b>Con:</b> Undiscoverable — needs a hint. May conflict with horizontal scroll.</div>
+</div>
+
+<h3>Combination?</h3>
+<div class="card">
+  <div class="note" style="margin-top:0">
+    <b>A + D:</b> Dropdown for jumping + Prev/Next for sequential.<br>
+    <b>C + B:</b> Tabs for switching + breadcrumbs for context.<br><br>
+    Which feels right for your practice flow? Do you usually go in order (Sarali → Janta → ...) or jump around?
+  </div>
+</div>
+
+</body>
+</html>
