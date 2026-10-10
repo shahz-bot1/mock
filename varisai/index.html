@@ -114,7 +114,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
     <div id="lessonList"></div>
   </section>
-  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-39 · 🔇 no sound on iPhone? turn off silent mode</p>
+  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-40 · 🔇 no sound on iPhone? turn off silent mode</p>
 </div>
 
 <!-- ============ PLAYER VIEW ============ -->
@@ -465,7 +465,8 @@ function openPattern(i) {
           gd.style.flex = g.length + " " + g.length + " 0";
           g.forEach(tok => {
             const c = document.createElement("span");
-            c.className = "chip" + (tok === "-" || tok === "," ? " rest" : tok === "~" ? " hold" : "");
+            const tokIsLo = tok[0] === "," && tok !== ",";
+            c.className = "chip" + (tokIsLo ? " lo" : "") + (tok === "-" || tok === "," ? " rest" : tok === "~" ? " hold" : "");
             c.textContent = dispTok(tok);
             gd.appendChild(c);
           });
