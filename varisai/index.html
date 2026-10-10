@@ -70,6 +70,13 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 .loopbtn:disabled { opacity: .45; cursor: default; }
 .layabox { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
 .layabox b { color: var(--text); }
+.laya-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 8px; }
+.laya-parts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.laya-part { display: flex; gap: 5px; align-items: center; }
+.laya-box { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 5px 9px; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; }
+.laya-and { color: var(--muted); font-size: 12px; font-style: italic; }
+.laya-legend { font-size: 11.5px; color: var(--muted); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 7px; }
+.laya-legend code { background: var(--bg); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
 .talaline { display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px; }
 .tgroup { display: flex; gap: 2px; background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
 .tgroup .chip { flex: 1 1 0; border: 0; background: transparent; padding: 7px 2px; }
@@ -96,7 +103,7 @@ header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
     <p class="sub">Traditional practice sequence · Mayamalavagowla unless noted</p>
     <div id="lessonList"></div>
   </section>
-  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-18 · 🔇 no sound on iPhone? turn off silent mode</p>
+  <p class="foot">Varisai Studio v1 · harmonium · build 2026.10.09-19 · 🔇 no sound on iPhone? turn off silent mode</p>
 </div>
 
 <!-- ============ PLAYER VIEW ============ -->
@@ -153,13 +160,13 @@ const LESSONS = [
     { "title": "2 \u00b7 Focus on R and N", "sub": "Paired R and N phrases", "laya": "12-12-1234 and 1234 5678", "notes": ["S","R1","S","R1","S","R1","G3","M1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","S'","N3","S'","N3","D1","P","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1"],["S","R1"],["S","R1","G3","M1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3"],["S'","N3"],["S'","N3","D1","P"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
     { "title": "3 \u00b7 Focus on G and D", "sub": "Triplet phrases on G and D", "laya": "123-123-12 and 1234 5678", "notes": ["S","R1","G3","S","R1","G3","S","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","S'","N3","D1","S'","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3"],["S","R1","G3"],["S","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1"],["S'","N3","D1"],["S'","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
     { "title": "4 \u00b7 Focus on M and P", "sub": "Repeated four-note phrases", "laya": "1234-1234 and 1234 5678", "notes": ["S","R1","G3","M1","S","R1","G3","M1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","S'","N3","D1","P","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["S","R1","G3","M1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["S'","N3","D1","P"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
-    { "title": "5 \u00b7 Focus on P and M (dheergam)", "sub": "Held P and M; R and N", "laya": "1234 56-12 and 1234 5678", "notes": ["S","R1","G3","M1","P",",","S","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1",",","S'","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P",","],["S","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1",","],["S'","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
-    { "title": "6 \u00b7 Focus on G and D", "sub": "Return phrases on G and D", "laya": "1234 56-12 and 1234 5678", "notes": ["S","R1","G3","M1","P","D1","S","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","G3","S'","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","D1"],["S","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1","G3"],["S'","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "5 \u00b7 Focus on P and M (dheergam)", "sub": "Held P and M; R and N", "laya": "1234 5,-12 and 1234 5678", "notes": ["S","R1","G3","M1","P",",","S","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1",",","S'","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P",","],["S","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1",","],["S'","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "6 \u00b7 Focus on G and D", "sub": "Return phrases on G and D", "laya": "1234 5,-12 and 1234 5678", "notes": ["S","R1","G3","M1","P","D1","S","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","G3","S'","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","D1"],["S","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1","G3"],["S'","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
     { "title": "7 \u00b7 Focus on N and R (dheergam)", "sub": "Held N and R", "laya": "1234 56-7, and 1234 5678", "notes": ["S","R1","G3","M1","P","D1","N3",",","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","G3","R1",",","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","D1"],["N3",","]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1","G3"],["R1",","]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
-    { "title": "8 \u00b7 Zig-zag", "sub": "Zig-zag: P M G R and M P D N", "laya": "1234 -4321 and 1234 5678", "notes": ["S","R1","G3","M1","P","M1","G3","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","P","D1","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","M1","G3","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1","P","D1","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
-    { "title": "9 \u00b7 Zig-zag", "sub": "Zig-zag: P M D P and M P G M", "laya": "1234 -4321 and 1234 5678", "notes": ["S","R1","G3","M1","P","M1","D1","P","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","P","G3","M1","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","M1","D1","P"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1","P","G3","M1"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
-    { "title": "10 \u00b7 Dheergam on P; rest on G", "sub": "Held P; G-N region; nyaasa on G", "laya": "1234 56-12 and 1,,,1,,, and 1234-4321 and 1234 5678", "notes": ["S","R1","G3","M1","P",",","G3","M1","P",",",",",",","P",",",",",",","G3","M1","P","D1","N3","D1","P","M1","G3","M1","P","G3","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P",","],["G3","M1"]],[["P",",",",",","],["P",",",",",","]],[["G3","M1","P","D1"],["N3","D1","P","M1"]],[["G3","M1","P"],["G3"],["M1","G3"],["R1","S"]]] },
-    { "title": "11 \u00b7 Dheergams at S, N, D, P", "sub": "Held S, N, D, P; G-N finishing phrases", "notes": ["S'",",","N3","D1","N3",",","D1","P","D1",",","P","M1","P",",","P",",","G3","M1","P","D1","N3","D1","P","M1","G3","M1","P","G3","M1","G3","R1","S"], "dlines": [[["S'",",","N3","D1"],["N3",","],["D1","P"]],[["D1",",","P","M1"],["P",","],["P",","]],[["G3","M1","P","D1"],["N3","D1"],["P","M1"]],[["G3","M1","P","G3"],["M1","G3"],["R1","S"]]] },
+    { "title": "8 \u00b7 Zig-zag", "sub": "Zig-zag: P M G R and M P D N", "laya": "1234 -5432 and 1234 5678", "notes": ["S","R1","G3","M1","P","M1","G3","R1","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","P","D1","N3","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","M1","G3","R1"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1","P","D1","N3"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "9 \u00b7 Zig-zag", "sub": "Zig-zag: P M D P and M P G M", "laya": "1234 -5465 and 1234 5678", "notes": ["S","R1","G3","M1","P","M1","D1","P","S","R1","G3","M1","P","D1","N3","S'","S'","N3","D1","P","M1","P","G3","M1","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P","M1","D1","P"]],[["S","R1","G3","M1","P","D1","N3","S'"]],[["S'","N3","D1","P"],["M1","P","G3","M1"]],[["S'","N3","D1","P","M1","G3","R1","S"]]] },
+    { "title": "10 \u00b7 Dheergam on P; rest on G", "sub": "Held P; G-N region; nyaasa on G", "laya": "1234 5,-12 and 1,,,1,,, and 1234-4321 and 1234 5678", "notes": ["S","R1","G3","M1","P",",","G3","M1","P",",",",",",","P",",",",",",","G3","M1","P","D1","N3","D1","P","M1","G3","M1","P","G3","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P",","],["G3","M1"]],[["P",",",",",","],["P",",",",",","]],[["G3","M1","P","D1"],["N3","D1","P","M1"]],[["G3","M1","P"],["G3"],["M1","G3"],["R1","S"]]] },
+    { "title": "11 \u00b7 Dheergams at S, N, D, P", "sub": "Held S, N, D, P; G-N finishing phrases", "notes": ["S'",",","N3","D1","N3",",","D1","P","D1",",","P","M1","P",",","P",",","G3","M1","P","D1","N3","D1","P","M1","G3","M1","P","G3","M1","G3","R1","S"], "dlines": [[["S'",",","N3","D1"],["N3",","],["D1","P"]],[["D1",",","P","M1"],["P",","],["P",","]],[["G3","M1","P","D1"],["N3","D1"],["P","M1"]],[["G3","M1","P"],["G3"],["M1","G3"],["R1","S"]]] },
     { "title": "12 \u00b7 Janta preview (sphuritam)", "sub": "Doubled S, N, D, P; held Pa", "notes": ["S'","S'","N3","D1","N3","N3","D1","P","D1","D1","P","M1","P",",","P",",","G3","M1","P","D1","N3","D1","P","M1","G3","M1","P","G3","M1","G3","R1","S"], "dlines": [[["S'","S'","N3","D1"],["N3","N3"],["D1","P"]],[["D1","D1","P","M1"],["P",","],["P",","]],[["G3","M1","P","D1"],["N3","D1"],["P","M1"]],[["G3","M1","P","G3"],["M1","G3"],["R1","S"]]] },
     { "title": "13 \u00b7 Zig-zag with dheergams", "sub": "Zig-zag; held G, P, D; M-N region", "notes": ["S","R1","G3","R1","G3",",","G3","M1","P","M1","P",",","D1","P","D1",",","M1","P","D1","P","D1","N3","D1","P","M1","P","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","R1"],["G3",","],["G3","M1"]],[["P","M1","P",","],["D1","P"],["D1",","]],[["M1","P","D1","P"],["D1","N3"],["D1","P"]],[["M1","P","D1","P"],["M1","G3"],["R1","S"]]] },
     { "title": "14 \u00b7 Dheergam at P and S", "sub": "Held P and S; jantas at D and M", "notes": ["S","R1","G3","M1","P",",","P",",","D1","D1","P",",","M1","M1","P",",","D1","N3","S'",",","S'","N3","D1","P","S'","N3","D1","P","M1","G3","R1","S"], "dlines": [[["S","R1","G3","M1"],["P",","],["P",","]],[["D1","D1","P",","],["M1","M1"],["P",","]],[["D1","N3","S'",","],["S'","N3"],["D1","P"]],[["S'","N3","D1","P"],["M1","G3"],["R1","S"]]] },
@@ -358,11 +365,25 @@ function openPattern(i) {
   document.getElementById("pSub").textContent =
     (p.sub ? p.sub + " · " : "") + curLesson.raga + " · " + p.notes.length + " swaras";
   const li = document.getElementById("layaInfo");
+  const parseLayaPart = part => {
+    part = part.replace(/\s*\([^)]*\)\s*/g, "").trim();
+    if (!part.includes("-")) return [part.replace(/\s+/g, "")];
+    const groups = [];
+    part.split(/\s+/).forEach(tok => { tok.split("-").forEach(g => { if (g) groups.push(g); }); });
+    return groups;
+  };
   if (p.laya) {
-    const m = p.laya.match(/^(.*) \(([^)]+)\)$/);
-    let slots = m ? m[1] : p.laya; const grp = m ? m[2] : "";
-    li.innerHTML = "<b>Laya " + slots + "</b>" +
-      (grp ? " <span>(" + grp + ") \u2014 tala count only</span>" : "");
+    const parts = p.laya.split(" and ").map(parseLayaPart);
+    let html = '<div class="laya-title">Laya</div><div class="laya-parts">';
+    parts.forEach((groups, pi) => {
+      if (pi > 0) html += '<span class="laya-and">and</span>';
+      html += '<div class="laya-part">';
+      groups.forEach(g => { html += '<span class="laya-box">' + g + '</span>'; });
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<div class="laya-legend"><code>-</code> separates groups only, never a rest \u00b7 digits count beats \u00b7 <code>,</code> = hold</div>';
+    li.innerHTML = html;
     li.style.display = "block";
   } else { li.style.display = "none"; }
   const row = document.getElementById("swaras");
