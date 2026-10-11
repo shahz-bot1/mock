@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P3 · Flow Strip — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-23">
+<link rel="stylesheet" href="core.css?v=2026.10.11-24">
 </head>
 <body>
 <header class="top">
@@ -37,7 +37,7 @@
   <div class="strip" id="strip"></div>
 </div>
 
-<script src="core.js?v=2026.10.11-23"></script>
+<script src="core.js?v=2026.10.11-24"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -154,6 +154,13 @@ playBtn.onclick = async () => {
   const flush = () => { if (pending) { evs.push(pending); pending = null; } };
   let t = t0, idx = 0;
   d().chips.forEach(c => {
+    const ct = t, cref = c;
+    timers.push(setTimeout(() => {
+      if (!playing) return;
+      chips.forEach(x => x.classList.remove("cur"));
+      const ci = d().chips.indexOf(cref);
+      if (chips[ci]) chips[ci].classList.add("cur");
+    }, Math.max(0, (ct - t0) * 1000)));
     if (c.k === "hold") { if (pending) pending.dur += c.beats * beat; t += c.beats * beat; return; }
     if (c.k === "note" && (c.stack || []).length && c.stack.every(n => n.hold)) {
       if (pending) pending.dur += c.beats * beat; t += c.beats * beat; idx++; return;
@@ -181,12 +188,6 @@ playBtn.onclick = async () => {
       SB.playNote(st, u.note.st, u.note.oct, d().saOffset, ud + Math.min(0.28, ud * 0.7));
       st += ud;
     });
-    timers.push(setTimeout(() => {
-      if (!playing) return;
-      chips.forEach(x => x.classList.remove("cur"));
-      const ci = d().chips.indexOf(ev.chip);
-      if (chips[ci]) chips[ci].classList.add("cur");
-    }, (ev.t - t0) * 1000));
   });
   timers.push(setTimeout(() => stop(), (t - t0) * 1000 + 400));
 };
