@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P3 · Flow Strip — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-8">
+<link rel="stylesheet" href="core.css?v=2026.10.11-9">
 </head>
 <body>
 <header class="top">
@@ -42,7 +42,7 @@
   <div class="controls" id="actionBar"></div>
 </div>
 
-<script src="core.js?v=2026.10.11-8"></script>
+<script src="core.js?v=2026.10.11-9"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -126,9 +126,11 @@ function renderActionBar() {
   });
   if (c.k === "note") {
     mk("＋ Stack", () => SB.openPicker({ title:"Stack onto chip", ragaId:d().ragaId,
-      showSpecials:"hold",
+      showSpecials:"hold", stackMode:true,
       onPick: p => {
-        if (p.kind === "swara") c.stack.push({ st:p.st, oct:p.oct });
+        if (p.kind === "stack") p.stack.forEach(n =>
+          c.stack.push(n.hold ? { hold:true } : { st:n.st, oct:n.oct }));
+        else if (p.kind === "swara") c.stack.push({ st:p.st, oct:p.oct });
         else if (p.kind === "hold") c.stack.push({ hold:true });
         else return;
         store.save(); render();
