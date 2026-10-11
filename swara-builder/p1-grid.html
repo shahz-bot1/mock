@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P1 · Adi Grid — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-17">
+<link rel="stylesheet" href="core.css?v=2026.10.11-18">
 </head>
 <body>
 <header class="top">
@@ -33,7 +33,7 @@
 </div>
 
 <div id="rows"></div>
-<script src="core.js?v=2026.10.11-17"></script>
+<script src="core.js?v=2026.10.11-18"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -111,6 +111,7 @@ function onSlotTap(r, i) {
     SB.openPicker({ title:`Row ${r+1} · beat ${i+1} · edit`, ragaId:d().ragaId, stackMode:true,
       current:`Now: ${SB.slotLabelHTML(s) || "–"}`,
       prefill: s.k === "note" ? s.stack : null,
+      stackOn: s.k === "note" && s.stack.length > 1,
       onPick: p => editPick(r, i, p) });
   }
 }
