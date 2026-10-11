@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P3 · Flow Strip — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-17">
+<link rel="stylesheet" href="core.css?v=2026.10.11-18">
 </head>
 <body>
 <header class="top">
@@ -37,7 +37,7 @@
   <div class="strip" id="strip"></div>
 </div>
 
-<script src="core.js?v=2026.10.11-17"></script>
+<script src="core.js?v=2026.10.11-18"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -107,6 +107,7 @@ function onChipTap(i) {
   SB.openPicker({ title:`Edit chip #${i + 1}`, ragaId:d().ragaId, stackMode:true,
     current:`Now: ${chipLabel(c)}`,
     prefill: c.k === "note" ? c.stack : null,
+    stackOn: c.k === "note" && c.stack.length > 1,
     duration:{ value:c.beats, options:DURS },
     onDuration: v => { d().chips[i].beats = v; store.save(); render(); },
     onPick: p => {
