@@ -80,7 +80,7 @@ input[type=range] { width: 130px; accent-color: var(--accent); }
   background: var(--panel2); color: var(--muted); font-size: 13px; }
 .seg button.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 .sheet .hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
-.stackbar { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; }
+.stackbar { display: flex; align-items: center; gap: 8px; margin: 10px 0 12px; }
 .stacktgl { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border);
   background: var(--panel2); color: var(--text); font-size: 14px; white-space: nowrap; }
 .stacktgl.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
