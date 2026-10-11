@@ -80,6 +80,11 @@ function render() {
     host.appendChild(el);
   });
   document.getElementById("totBeats").textContent = tot;
+  const add = document.createElement("div");
+  add.className = "fchip addc";
+  add.textContent = "＋";
+  add.onclick = openAppendPicker;
+  host.appendChild(add);
   const foots = document.querySelectorAll(".foot");
   foots.forEach((f, i) => { if (i < foots.length - 1) f.remove(); });
   document.body.appendChild(SB.footer());
@@ -87,12 +92,14 @@ function render() {
 }
 
 function addChip(chip) { stop(); d().chips.push(chip); store.save(); render(); }
-document.getElementById("addBtn").onclick = () =>
+function openAppendPicker() {
   SB.openPicker({ title:"Append swara", ragaId:d().ragaId, onPick: p => {
     if (p.kind === "swara") addChip({ k:"note", stack:[{ st:p.st, oct:p.oct }], beats:1 });
     else if (p.kind === "hold") addChip({ k:"hold", beats:1 });
     else if (p.kind === "gap") addChip({ k:"gap", beats:1 });
   }});
+}
+document.getElementById("addBtn").onclick = openAppendPicker;
 document.getElementById("addGap").onclick = () => addChip({ k:"gap", beats:1 });
 document.getElementById("addHold").onclick = () => addChip({ k:"hold", beats:1 });
 document.getElementById("clearBtn").onclick = () => {
