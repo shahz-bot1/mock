@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.11-5";
+  const BUILD_VERSION = "2026.10.11-6";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -46,6 +46,7 @@ const SB = (() => {
     if (slot.k === "gap") return "–";
     if (slot.k !== "note" || !slot.stack.length) return "";
     return slot.stack.map(n => {
+      if (n.hold) return `<span class="st">,</span>`;
       const cls = n.oct > 0 ? "oct-up" : n.oct < 0 ? "oct-dn" : "";
       const m = n.st.match(/^([A-Z])(\d?)$/);
       const inner = m ? m[1] + (m[2] ? "<sub>"+m[2]+"</sub>" : "") : n.st;
@@ -178,16 +179,22 @@ const SB = (() => {
     events.forEach(ev => {
       const n = ev.subs.length;
       const subBeat = beatDur / n; // brigha: a stack subdivides its OWN beat
-      ev.subs.forEach((note, si) => {
-        const t = t0 + (ev.beat * beatDur) + si * subBeat;
-        // holds extend the LAST sub-note (dheergam extends the previous swara);
-        // earlier sub-notes keep brigha speed inside the beat
-        const dur = si === n - 1
-          ? beatDur * ev.soundBeats - si * subBeat
-          : subBeat;
+      // a hold inside the stack extends the preceding sub-note
+      const units = [];
+      ev.subs.forEach(sn => {
+        if (sn.hold) { if (units.length) units[units.length - 1].shares += 1; }
+        else units.push({ note: sn, shares: 1 });
+      });
+      if (!units.length) return; // all-hold stack: silence
+      let t = t0 + ev.beat * beatDur;
+      units.forEach((u, ui) => {
+        // outer holds extend the LAST unit (dheergam extends the previous swara)
+        let dur = u.shares * subBeat;
+        if (ui === units.length - 1) dur += beatDur * (ev.soundBeats - 1);
         // scaled legato: tail grows with sub-note length, capped
         const ring = dur + Math.min(0.28, dur * 0.7);
-        playNote(t, note.st, note.oct, saOffset, ring);
+        playNote(t, u.note.st, u.note.oct, saOffset, ring);
+        t += u.shares * subBeat;
       });
     });
     // highlight timers (per beat, first sub only)
@@ -254,8 +261,9 @@ const SB = (() => {
         (opts.showSpecials === false ? "" :
         `<div class="prow">` +
           `<button class="pbtn" data-sp="hold">, hold</button>` +
+          (opts.showSpecials === "hold" ? "" :
           `<button class="pbtn" data-sp="gap">– gap</button>` +
-          `<button class="pbtn" data-sp="clear">✕ clear</button>` +
+          `<button class="pbtn" data-sp="clear">✕ clear</button>`) +
         `</div>`) +
         `<div class="hint">${raga ? raga.name + " · tap a swara, or hold/gap/clear" : "Chromatic · all 16 sthanas"}</div>`;
       pickerEl.querySelectorAll("#pkOct button").forEach(b => b.onclick = () => {
