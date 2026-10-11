@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P1 · Adi Grid — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-14">
+<link rel="stylesheet" href="core.css?v=2026.10.11-15">
 </head>
 <body>
 <header class="top">
@@ -33,7 +33,7 @@
 </div>
 
 <div id="rows"></div>
-<script src="core.js?v=2026.10.11-14"></script>
+<script src="core.js?v=2026.10.11-15"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -110,6 +110,7 @@ function onSlotTap(r, i) {
   } else {
     SB.openPicker({ title:`Row ${r+1} · beat ${i+1} · edit`, ragaId:d().ragaId, stackMode:true,
       current:`Now: ${SB.slotLabelHTML(s) || "–"}`,
+      prefill: s.k === "note" ? s.stack : null,
       onPick: p => editPick(r, i, p) });
   }
 }
@@ -123,15 +124,11 @@ function addPick(r, i, p) {
 }
 
 function editPick(r, i, p) {
-  const s = d().rows[r].slots[i];
   if (p.kind === "clear") d().rows[r].slots[i] = SB.emptySlot();
   else if (p.kind === "hold") d().rows[r].slots[i] = { k:"hold" };
   else if (p.kind === "gap") d().rows[r].slots[i] = { k:"gap" };
   else if (p.kind === "swara") d().rows[r].slots[i] = { k:"note", stack:[{ st:p.st, oct:p.oct }] };
-  else if (p.kind === "stack") {
-    if (s.k === "note") p.stack.forEach(n => s.stack.push(n));
-    else d().rows[r].slots[i] = { k:"note", stack:p.stack };
-  }
+  else if (p.kind === "stack") d().rows[r].slots[i] = { k:"note", stack:p.stack };
   store.save(); render();
 }
 
