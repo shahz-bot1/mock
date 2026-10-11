@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P3 · Flow Strip — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-21">
+<link rel="stylesheet" href="core.css?v=2026.10.11-22">
 </head>
 <body>
 <header class="top">
@@ -37,7 +37,7 @@
   <div class="strip" id="strip"></div>
 </div>
 
-<script src="core.js?v=2026.10.11-21"></script>
+<script src="core.js?v=2026.10.11-22"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -99,8 +99,7 @@ function onChipTap(i) {
         if (p.kind === "swara") addChip({ k:"note", stack:[{ st:p.st, oct:p.oct }], beats });
         else if (p.kind === "hold") addChip({ k:"hold", beats });
         else if (p.kind === "gap") addChip({ k:"gap", beats });
-        else if (p.kind === "stack") addChip(p.stack.every(n => n.hold)
-          ? { k:"hold", beats } : { k:"note", stack:p.stack, beats });
+        else if (p.kind === "stack") addChip({ k:"note", stack:p.stack, beats });
       }});
     return;
   }
@@ -116,8 +115,7 @@ function onChipTap(i) {
       else if (p.kind === "hold") d().chips[i] = { k:"hold", beats:c.beats };
       else if (p.kind === "gap") d().chips[i] = { k:"gap", beats:c.beats };
       else if (p.kind === "clear") d().chips.splice(i, 1);
-      else if (p.kind === "stack") d().chips[i] = p.stack.every(n => n.hold)
-        ? { k:"hold", beats:c.beats } : { k:"note", stack:p.stack, beats:c.beats };
+      else if (p.kind === "stack") d().chips[i] = { k:"note", stack:p.stack, beats:c.beats };
       else return;
       store.save(); render();
     }});
