@@ -27,7 +27,7 @@
     <button class="btn ghost" id="addHold">＋ Hold ,</button>
     <button class="btn danger" id="clearBtn">Clear</button>
   </div>
-  <p class="note">Tap a chip to edit it: cycle its duration (¼ → ½ → 1 → 2 beats), stack more swaras,
+  <p class="note">Tap a chip to edit it: cycle its duration (¼ → ½ → 1 → 2 → 4 beats), stack more swaras,
   move or delete. Total beats: <b id="totBeats">0</b>. This is the free-time answer to P1's grid —
   nothing is forced into 8.</p>
 </div>
@@ -53,7 +53,7 @@ const store = {
   save() { SB.save("sb-p3", this.data); }
 };
 const d = () => store.data;
-const DURS = [0.25, 0.5, 1, 2];
+const DURS = [0.25, 0.5, 1, 2, 4];
 const durLabel = b => b === 1 ? "1 beat" : b === 0.5 ? "½ beat" : b === 0.25 ? "¼ beat" : b + " beats";
 
 document.getElementById("ragaSlot").appendChild(SB.ragaSelect(d().ragaId, v => { d().ragaId = v; store.save(); }));
