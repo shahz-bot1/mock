@@ -91,6 +91,7 @@ function parseToken(tok, ragaSet) {
   const parts = tok.split("+");
   const stack = [];
   for (const p of parts) {
+    if (p === ",") { stack.push({ hold:true }); continue; } // hold inside a stack
     let oct = 0, s = p;
     if (s.startsWith(".")) { oct = -1; s = s.slice(1); }
     if (s.endsWith("'")) { oct = 1; s = s.slice(0, -1); }
@@ -98,7 +99,7 @@ function parseToken(tok, ragaSet) {
     if (!SB.SEMI.hasOwnProperty(st)) return { slot:null, ok:false };
     stack.push({ st, oct });
   }
-  const inRaga = !ragaSet || stack.every(n => ragaSet.has(n.st));
+  const inRaga = !ragaSet || stack.every(n => n.hold || ragaSet.has(n.st));
   return { slot:{ k:"note", stack }, ok:true, inRaga };
 }
 function parseLine(sw) {
