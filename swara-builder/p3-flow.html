@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P3 · Flow Strip — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-22">
+<link rel="stylesheet" href="core.css?v=2026.10.11-23">
 </head>
 <body>
 <header class="top">
@@ -37,7 +37,7 @@
   <div class="strip" id="strip"></div>
 </div>
 
-<script src="core.js?v=2026.10.11-22"></script>
+<script src="core.js?v=2026.10.11-23"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -155,6 +155,9 @@ playBtn.onclick = async () => {
   let t = t0, idx = 0;
   d().chips.forEach(c => {
     if (c.k === "hold") { if (pending) pending.dur += c.beats * beat; t += c.beats * beat; return; }
+    if (c.k === "note" && (c.stack || []).length && c.stack.every(n => n.hold)) {
+      if (pending) pending.dur += c.beats * beat; t += c.beats * beat; idx++; return;
+    }
     flush();
     if (c.k === "note") pending = { chip:c, idx, t, dur:c.beats * beat };
     t += c.beats * beat; idx++;
