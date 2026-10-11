@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.11-11";
+  const BUILD_VERSION = "2026.10.11-12";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -261,6 +261,16 @@ const SB = (() => {
           `<button data-o="0" class="${oct===0?"on":""}">middle</button>` +
           `<button data-o="1" class="${oct===1?"on":""}">high (S˙)</button>` +
         `</div>` +
+        `<div class="pgrid">` +
+          list.map(s => `<button class="pbtn${stackOn && inSel(s) ? " picked" : ""}" data-st="${s}">${sub(s)}</button>`).join("") +
+        `</div>` +
+        (opts.showSpecials === false ? "" :
+        `<div class="prow">` +
+          `<button class="pbtn" data-sp="hold">, hold</button>` +
+          (opts.showSpecials === "hold" ? "" :
+          `<button class="pbtn" data-sp="gap">– gap</button>` +
+          `<button class="pbtn" data-sp="clear">✕ clear</button>`) +
+        `</div>`) +
         (opts.stackMode ?
           `<div class="stackbar">` +
             `<button class="stacktgl${stackOn ? " on" : ""}" id="pkStackTgl">Stack ＋</button>` +
@@ -274,16 +284,6 @@ const SB = (() => {
             : "") +
           `</div>`
         : "") +
-        `<div class="pgrid">` +
-          list.map(s => `<button class="pbtn${stackOn && inSel(s) ? " picked" : ""}" data-st="${s}">${sub(s)}</button>`).join("") +
-        `</div>` +
-        (opts.showSpecials === false ? "" :
-        `<div class="prow">` +
-          `<button class="pbtn" data-sp="hold">, hold</button>` +
-          (opts.showSpecials === "hold" ? "" :
-          `<button class="pbtn" data-sp="gap">– gap</button>` +
-          `<button class="pbtn" data-sp="clear">✕ clear</button>`) +
-        `</div>`) +
         `<div class="hint">${stackOn ? "tap several in order · tap a selected chip to remove · then ✓ Done"
           : (raga ? raga.name + " · tap a swara, or hold/gap/clear" : "Chromatic · all 16 sthanas")}</div>`;
       pickerEl.querySelectorAll("#pkOct button").forEach(b => b.onclick = () => {
