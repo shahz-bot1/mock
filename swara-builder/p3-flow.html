@@ -126,8 +126,13 @@ function renderActionBar() {
   });
   if (c.k === "note") {
     mk("＋ Stack", () => SB.openPicker({ title:"Stack onto chip", ragaId:d().ragaId,
-      showSpecials:false,
-      onPick: p => { if (p.kind === "swara") { c.stack.push({ st:p.st, oct:p.oct }); store.save(); render(); } } }));
+      showSpecials:"hold",
+      onPick: p => {
+        if (p.kind === "swara") c.stack.push({ st:p.st, oct:p.oct });
+        else if (p.kind === "hold") c.stack.push({ hold:true });
+        else return;
+        store.save(); render();
+      } }));
     mk("Replace", () => SB.openPicker({ title:"Replace chip", ragaId:d().ragaId,
       onPick: p => {
         if (p.kind === "swara") d().chips[sel] = { k:"note", stack:[{ st:p.st, oct:p.oct }], beats:c.beats };
@@ -182,11 +187,22 @@ playBtn.onclick = async () => {
   });
   flush();
   evs.forEach(ev => {
-    const n = ev.chip.stack.length;
-    ev.chip.stack.forEach((note, si) => {
-      const st = ev.t + si * (ev.dur / n);
-      const sub = ev.dur / n;
-      SB.playNote(st, note.st, note.oct, d().saOffset, sub + Math.min(0.28, sub * 0.7));
+    const stack = ev.chip.stack || [];
+    const n = stack.length;
+    if (!n) return;
+    // a hold inside the stack extends the preceding sub-note
+    const units = [];
+    stack.forEach(sn => {
+      if (sn.hold) { if (units.length) units[units.length - 1].shares += 1; }
+      else units.push({ note: sn, shares: 1 });
+    });
+    if (!units.length) return;
+    const sub = ev.dur / n;
+    let st = ev.t;
+    units.forEach(u => {
+      const d = u.shares * sub;
+      SB.playNote(st, u.note.st, u.note.oct, d().saOffset, d + Math.min(0.28, d * 0.7));
+      st += d;
     });
     timers.push(setTimeout(() => {
       if (!playing) return;
