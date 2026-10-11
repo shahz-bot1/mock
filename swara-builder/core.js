@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.11-2";
+  const BUILD_VERSION = "2026.10.11-3";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -107,6 +107,14 @@ const SB = (() => {
     if (buf) {
       const src = actx.createBufferSource();
       src.buffer = buf; src.playbackRate.value = rate;
+      // loop the sustain section so notes longer than the sample never go silent
+      if (buf.duration && buf.duration > 1) {
+        try {
+          src.loop = true;
+          src.loopStart = Math.min(0.5, buf.duration * 0.1);
+          src.loopEnd = Math.max(src.loopStart + 0.2, buf.duration - 0.5);
+        } catch (e) { /* ignore */ }
+      }
       const g = actx.createGain();
       g.gain.setValueAtTime(0.0001, t);
       g.gain.exponentialRampToValueAtTime(v, t + 0.02);
@@ -169,11 +177,16 @@ const SB = (() => {
 
     events.forEach(ev => {
       const n = ev.subs.length;
-      const subDur = (beatDur * ev.soundBeats) / n;
+      const subBeat = beatDur / n; // brigha: a stack subdivides its OWN beat
       ev.subs.forEach((note, si) => {
-        const t = t0 + (ev.beat * beatDur) + si * (beatDur / n);
+        const t = t0 + (ev.beat * beatDur) + si * subBeat;
+        // holds extend the LAST sub-note (dheergam extends the previous swara);
+        // earlier sub-notes keep brigha speed inside the beat
+        const dur = si === n - 1
+          ? beatDur * ev.soundBeats - si * subBeat
+          : subBeat;
         // scaled legato: tail grows with sub-note length, capped
-        const ring = subDur + Math.min(0.28, subDur * 0.7);
+        const ring = dur + Math.min(0.28, dur * 0.7);
         playNote(t, note.st, note.oct, saOffset, ring);
       });
     });
