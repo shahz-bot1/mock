@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.11-19";
+  const BUILD_VERSION = "2026.10.11-20";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -308,11 +308,8 @@ const SB = (() => {
       if (tgl) tgl.onclick = () => { stackOn = !stackOn; render(); };
       pickerEl.querySelectorAll("[data-st]").forEach(b => b.onclick = () => {
         const st = b.dataset.st;
-        if (stackOn) {
-          const ix = sel.findIndex(x => !x.hold && x.st === st && x.oct === oct);
-          if (ix >= 0) sel.splice(ix, 1); else sel.push({ st, oct });
-          render();
-        } else { closePicker(); opts.onPick({ kind:"swara", st, oct }); }
+        if (stackOn) { sel.push({ st, oct }); render(); }
+        else { closePicker(); opts.onPick({ kind:"swara", st, oct }); }
       });
       pickerEl.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => {
         if (stackOn && b.dataset.sp === "hold") { sel.push({ hold:true }); render(); return; }
