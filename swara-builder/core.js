@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.11-22";
+  const BUILD_VERSION = "2026.10.11-23";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -151,6 +151,7 @@ const SB = (() => {
    * rows: array of {slots:[8 slots]}
    * opts: beatDur (s), saOffset, onSlot(row,slot,sub), onDone, loop
    * hold: extends previous sounding note through the beat; gap/empty: silence.
+   * an all-hold stack also extends the previous sounding note (like a hold).
    * note stacks subdivide the beat equally; each sub-note rings a scaled legato tail.
    */
   function playRows(rows, opts) {
@@ -170,6 +171,10 @@ const SB = (() => {
     flat.forEach((f, b) => {
       const s = f.s;
       if (s.k === "hold") { if (pending) pending.soundBeats += 1; return; }
+      if (s.k === "note" && s.stack.length && s.stack.every(n => n.hold)) {
+        if (pending) pending.soundBeats += 1; // all-hold stack extends previous note
+        return;
+      }
       flushPending();
       if (s.k === "note" && s.stack.length) {
         pending = { beat: b, subs: s.stack.slice(), soundBeats: 1, ref: f };
@@ -187,7 +192,7 @@ const SB = (() => {
         if (sn.hold) { if (units.length) units[units.length - 1].shares += 1; }
         else units.push({ note: sn, shares: 1 });
       });
-      if (!units.length) return; // all-hold stack: silence
+      if (!units.length) return; // safety: all-hold stacks are merged as extensions above
       let t = t0 + ev.beat * beatDur;
       units.forEach((u, ui) => {
         // outer holds extend the LAST unit (dheergam extends the previous swara)
