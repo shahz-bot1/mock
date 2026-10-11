@@ -150,6 +150,7 @@ function renderActionBar() {
   };
   if (s.k === "note") {
     mk("＋ Stack swara", () => SB.openPicker({ title:`Beat ${i+1} · add to stack`, ragaId:d().ragaId,
+      showSpecials:false,
       onPick: p => { if (p.kind === "swara") applyPick(r, i, p, true); else applyPick(r, i, p, false); } }));
     mk("Replace", () => SB.openPicker({ title:`Beat ${i+1} · replace`, ragaId:d().ragaId,
       onPick: p => applyPick(r, i, p, false) }));
