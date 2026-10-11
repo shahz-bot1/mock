@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.11-8";
+  const BUILD_VERSION = "2026.10.11-9";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -236,18 +236,24 @@ const SB = (() => {
   }
   /**
    * opts: {title, ragaId|null (null=chromatic), oct (default), showSpecials:true,
-   *        onPick({kind:'swara',st,oct}|{kind:'hold'|'gap'|'clear'})}
+   *        stackMode:bool (adds a single/stack toggle; stack mode multi-selects
+   *          in tap order, shown near the toggle, confirmed with ✓ Done),
+   *        onPick({kind:'swara',st,oct}|{kind:'hold'|'gap'|'clear'}|{kind:'stack',stack})}
    */
   function openPicker(opts) {
     ensurePickerDOM();
     const raga = opts.ragaId ? ragaById(opts.ragaId) : null;
     const list = raga ? ragaPickerList(raga) : CHROMATIC;
     let oct = opts.oct != null ? opts.oct : 0;
+    let stackOn = !!opts.stackMode;
+    let sel = []; // ordered multi-selection: [{st,oct}|{hold:true}]
+    const selLabel = n => n.hold ? "," : n.st + (n.oct > 0 ? "'" : n.oct < 0 ? "." : "");
     const render = () => {
       const sub = st => {
         const m = st.match(/^([A-Z])(\d?)$/);
         return m ? m[1] + (m[2] ? "<sub>"+m[2]+"</sub>" : "") : st;
       };
+      const inSel = st => sel.some(x => !x.hold && x.st === st && x.oct === oct);
       pickerEl.innerHTML =
         `<h3>${opts.title || "Pick swara"}</h3>` +
         `<div class="seg" id="pkOct">` +
@@ -255,8 +261,22 @@ const SB = (() => {
           `<button data-o="0" class="${oct===0?"on":""}">middle</button>` +
           `<button data-o="1" class="${oct===1?"on":""}">high (S˙)</button>` +
         `</div>` +
+        (opts.stackMode ?
+          `<div class="seg" id="pkMode">` +
+            `<button data-m="single" class="${!stackOn?"on":""}">single</button>` +
+            `<button data-m="stack" class="${stackOn?"on":""}">stack ＋</button>` +
+          `</div>` +
+          (stackOn ?
+            `<div id="pkSel">` +
+              (sel.length ? sel.map((n, i) =>
+                `<button class="selchip" data-i="${i}">${selLabel(n)}<span class="x">×</span></button>`
+              ).join("") : `<span class="hint">tap swaras in order…</span>`) +
+            `</div>` +
+            `<button class="pbtn donebtn" id="pkDone" ${sel.length ? "" : "disabled"}>✓ Done${sel.length ? ` (${sel.length})` : ""}</button>`
+          : "")
+        : "") +
         `<div class="pgrid">` +
-          list.map(s => `<button class="pbtn" data-st="${s}">${sub(s)}</button>`).join("") +
+          list.map(s => `<button class="pbtn${stackOn && inSel(s) ? " picked" : ""}" data-st="${s}">${sub(s)}</button>`).join("") +
         `</div>` +
         (opts.showSpecials === false ? "" :
         `<div class="prow">` +
@@ -265,16 +285,34 @@ const SB = (() => {
           `<button class="pbtn" data-sp="gap">– gap</button>` +
           `<button class="pbtn" data-sp="clear">✕ clear</button>`) +
         `</div>`) +
-        `<div class="hint">${raga ? raga.name + " · tap a swara, or hold/gap/clear" : "Chromatic · all 16 sthanas"}</div>`;
+        `<div class="hint">${stackOn ? "tap several in order · tap a selected chip to remove · then ✓ Done"
+          : (raga ? raga.name + " · tap a swara, or hold/gap/clear" : "Chromatic · all 16 sthanas")}</div>`;
       pickerEl.querySelectorAll("#pkOct button").forEach(b => b.onclick = () => {
         oct = +b.dataset.o; render();
       });
+      pickerEl.querySelectorAll("#pkMode button").forEach(b => b.onclick = () => {
+        stackOn = b.dataset.m === "stack"; render();
+      });
       pickerEl.querySelectorAll("[data-st]").forEach(b => b.onclick = () => {
-        closePicker(); opts.onPick({ kind:"swara", st:b.dataset.st, oct });
+        const st = b.dataset.st;
+        if (stackOn) {
+          const ix = sel.findIndex(x => !x.hold && x.st === st && x.oct === oct);
+          if (ix >= 0) sel.splice(ix, 1); else sel.push({ st, oct });
+          render();
+        } else { closePicker(); opts.onPick({ kind:"swara", st, oct }); }
       });
       pickerEl.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => {
+        if (stackOn && b.dataset.sp === "hold") { sel.push({ hold:true }); render(); return; }
         closePicker(); opts.onPick({ kind:b.dataset.sp });
       });
+      pickerEl.querySelectorAll(".selchip").forEach(b => b.onclick = () => {
+        sel.splice(+b.dataset.i, 1); render();
+      });
+      const done = pickerEl.querySelector("#pkDone");
+      if (done) done.onclick = () => {
+        if (!sel.length) return;
+        closePicker(); opts.onPick({ kind:"stack", stack:sel });
+      };
     };
     render();
     pickerEl.classList.add("on");
