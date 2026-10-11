@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.11-14";
+  const BUILD_VERSION = "2026.10.11-15";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -237,6 +237,8 @@ const SB = (() => {
   /**
    * opts: {title, ragaId|null (null=chromatic), oct (default), showSpecials:true,
    *        stackMode:bool (shows the Stack toggle, off by default),
+   *        prefill:[{st,oct}|{hold:true}] (initial stack selection, e.g. current
+   *          value in edit mode),
    *        current: html shown under the title (e.g. current value in edit mode),
    *        duration:{value, options[]} + onDuration(v) (e.g. P3 chip length),
    *        onPick({kind:'swara',st,oct}|{kind:'hold'|'gap'|'clear'}|{kind:'stack',stack})}
@@ -247,7 +249,7 @@ const SB = (() => {
     const list = raga ? ragaPickerList(raga) : CHROMATIC;
     let oct = opts.oct != null ? opts.oct : 0;
     let stackOn = !!opts.stackOn;
-    let sel = []; // ordered multi-selection: [{st,oct}|{hold:true}]
+    let sel = (opts.prefill || []).map(n => n.hold ? { hold:true } : { st:n.st, oct:n.oct });
     let durVal = opts.duration ? opts.duration.value : null;
     const selLabel = n => n.hold ? "," : n.st + (n.oct > 0 ? "'" : n.oct < 0 ? "." : "");
     const durLbl = b => b === 1 ? "1" : b === 0.5 ? "½" : b === 0.25 ? "¼" : b + "";
@@ -322,7 +324,7 @@ const SB = (() => {
       const done = pickerEl.querySelector("#pkDone");
       if (done) done.onclick = () => {
         if (!sel.length) return;
-        closePicker(); opts.onPick({ kind:"stack", stack:sel });
+        closePicker(); opts.onPick({ kind:"stack", stack:sel.map(n => ({ ...n })) });
       };
     };
     render();
