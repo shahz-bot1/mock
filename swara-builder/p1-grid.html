@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P1 · Adi Grid — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-8">
+<link rel="stylesheet" href="core.css?v=2026.10.11-9">
 </head>
 <body>
 <header class="top">
@@ -38,7 +38,7 @@
   <div class="controls" id="actionBar"></div>
 </div>
 
-<script src="core.js?v=2026.10.11-8"></script>
+<script src="core.js?v=2026.10.11-9"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -152,9 +152,13 @@ function renderActionBar() {
     b.onclick = fn; bar.appendChild(b);
   };
   if (s.k === "note") {
-    mk("＋ Stack swara", () => SB.openPicker({ title:`Beat ${i+1} · add to stack`, ragaId:d().ragaId,
-      showSpecials:"hold",
-      onPick: p => applyPick(r, i, p, true) }));
+    mk("＋ Stack", () => SB.openPicker({ title:`Beat ${i+1} · stack`, ragaId:d().ragaId,
+      showSpecials:"hold", stackMode:true,
+      onPick: p => {
+        if (p.kind === "stack") p.stack.forEach(n =>
+          applyPick(r, i, n.hold ? { kind:"hold" } : { kind:"swara", st:n.st, oct:n.oct }, true));
+        else applyPick(r, i, p, true);
+      } }));
     mk("Replace", () => SB.openPicker({ title:`Beat ${i+1} · replace`, ragaId:d().ragaId,
       onPick: p => applyPick(r, i, p, false) }));
   } else {
