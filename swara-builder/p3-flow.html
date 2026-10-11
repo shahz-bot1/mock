@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P3 · Flow Strip — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-12">
+<link rel="stylesheet" href="core.css?v=2026.10.11-13">
 </head>
 <body>
 <header class="top">
@@ -37,12 +37,7 @@
   <div class="strip" id="strip"></div>
 </div>
 
-<div class="card" id="actionCard" style="display:none">
-  <h2>Chip <span id="acNum"></span></h2>
-  <div class="controls" id="actionBar"></div>
-</div>
-
-<script src="core.js?v=2026.10.11-12"></script>
+<script src="core.js?v=2026.10.11-13"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -64,7 +59,6 @@ const paintTempo = () => tempoV.textContent = tempoEl.value;
 paintTempo();
 tempoEl.oninput = () => { d().tempo = +tempoEl.value; paintTempo(); store.save(); restartIfPlaying(); };
 
-let sel = null;
 function render() {
   const host = document.getElementById("strip");
   host.innerHTML = "";
@@ -72,89 +66,65 @@ function render() {
   d().chips.forEach((c, i) => {
     tot += c.beats;
     const el = document.createElement("div");
-    el.className = "fchip" + (c.k === "gap" ? " gapc" : c.k === "hold" ? " holdc" : "") + (sel === i ? " cur" : "");
+    el.className = "fchip" + (c.k === "gap" ? " gapc" : c.k === "hold" ? " holdc" : "");
     el.innerHTML = (c.k === "note" ? SB.slotLabelHTML({ k:"note", stack:c.stack })
                     : c.k === "hold" ? "," : "–") +
       `<span class="dur">${durLabel(c.beats)}</span>`;
-    el.onclick = () => { sel = (sel === i ? null : i); render(); };
+    el.onclick = () => onChipTap(i);
     host.appendChild(el);
   });
   document.getElementById("totBeats").textContent = tot;
   const add = document.createElement("div");
   add.className = "fchip addc";
   add.textContent = "＋";
-  add.onclick = openAppendPicker;
+  add.onclick = () => onChipTap(-1);
   host.appendChild(add);
   const foots = document.querySelectorAll(".foot");
   foots.forEach((f, i) => { if (i < foots.length - 1) f.remove(); });
   document.body.appendChild(SB.footer());
-  renderActionBar();
 }
 
 function addChip(chip) { stop(); d().chips.push(chip); store.save(); render(); }
-function openAppendPicker() {
-  SB.openPicker({ title:"Append swara", ragaId:d().ragaId, onPick: p => {
-    if (p.kind === "swara") addChip({ k:"note", stack:[{ st:p.st, oct:p.oct }], beats:1 });
-    else if (p.kind === "hold") addChip({ k:"hold", beats:1 });
-    else if (p.kind === "gap") addChip({ k:"gap", beats:1 });
-  }});
+function chipLabel(c) {
+  return c.k === "note" ? SB.slotLabelHTML({ k:"note", stack:c.stack })
+    : c.k === "hold" ? "," : "–";
 }
-document.getElementById("addBtn").onclick = openAppendPicker;
+function onChipTap(i) {
+  if (i < 0) {
+    SB.openPicker({ title:"Append swara", ragaId:d().ragaId, stackMode:true,
+      onPick: p => {
+        if (p.kind === "swara") addChip({ k:"note", stack:[{ st:p.st, oct:p.oct }], beats:1 });
+        else if (p.kind === "hold") addChip({ k:"hold", beats:1 });
+        else if (p.kind === "gap") addChip({ k:"gap", beats:1 });
+        else if (p.kind === "stack") addChip({ k:"note", stack:p.stack, beats:1 });
+      }});
+    return;
+  }
+  const c = d().chips[i];
+  SB.openPicker({ title:`Edit chip #${i + 1}`, ragaId:d().ragaId, stackMode:true,
+    current:`Now: ${chipLabel(c)}`,
+    duration:{ value:c.beats, options:DURS },
+    onDuration: v => { d().chips[i].beats = v; store.save(); render(); },
+    onPick: p => {
+      if (p.kind === "swara") d().chips[i] = { k:"note", stack:[{ st:p.st, oct:p.oct }], beats:c.beats };
+      else if (p.kind === "hold") d().chips[i] = { k:"hold", beats:c.beats };
+      else if (p.kind === "gap") d().chips[i] = { k:"gap", beats:c.beats };
+      else if (p.kind === "clear") d().chips.splice(i, 1);
+      else if (p.kind === "stack") {
+        if (c.k === "note") p.stack.forEach(n => c.stack.push(n));
+        else d().chips[i] = { k:"note", stack:p.stack, beats:c.beats };
+      }
+      else return;
+      store.save(); render();
+    }});
+}
+document.getElementById("addBtn").onclick = () => onChipTap(-1);
 document.getElementById("addGap").onclick = () => addChip({ k:"gap", beats:1 });
 document.getElementById("addHold").onclick = () => addChip({ k:"hold", beats:1 });
 document.getElementById("clearBtn").onclick = () => {
   if (!confirm("Clear phrase?")) return;
-  stop(); d().chips = []; sel = null; store.save(); render();
+  stop(); d().chips = []; store.save(); render();
 };
-
-function renderActionBar() {
-  const card = document.getElementById("actionCard");
-  if (sel == null || !d().chips[sel]) { card.style.display = "none"; return; }
-  card.style.display = "";
-  const c = d().chips[sel];
-  document.getElementById("acNum").textContent = `#${sel + 1}`;
-  const bar = document.getElementById("actionBar");
-  bar.innerHTML = "";
-  const mk = (label, fn, cls) => {
-    const b = document.createElement("button");
-    b.className = "btn " + (cls || "ghost"); b.textContent = label;
-    b.onclick = fn; bar.appendChild(b);
-  };
-  mk("⏱ " + durLabel(c.beats), () => {
-    c.beats = DURS[(DURS.indexOf(c.beats) + 1) % DURS.length];
-    store.save(); render();
-  });
-  if (c.k === "note") {
-    mk("＋ Stack", () => SB.openPicker({ title:"Stack onto chip", ragaId:d().ragaId,
-      showSpecials:"hold", stackMode:true,
-      onPick: p => {
-        if (p.kind === "stack") p.stack.forEach(n =>
-          c.stack.push(n.hold ? { hold:true } : { st:n.st, oct:n.oct }));
-        else if (p.kind === "swara") c.stack.push({ st:p.st, oct:p.oct });
-        else if (p.kind === "hold") c.stack.push({ hold:true });
-        else return;
-        store.save(); render();
-      } }));
-    mk("Replace", () => SB.openPicker({ title:"Replace chip", ragaId:d().ragaId,
-      onPick: p => {
-        if (p.kind === "swara") d().chips[sel] = { k:"note", stack:[{ st:p.st, oct:p.oct }], beats:c.beats };
-        else if (p.kind === "hold" || p.kind === "gap") d().chips[sel] = { k:p.kind, beats:c.beats };
-        else return;
-        store.save(); render();
-      } }));
-  } else {
-    mk("Set swara", () => SB.openPicker({ title:"Set swara", ragaId:d().ragaId,
-      onPick: p => {
-        if (p.kind !== "swara") return;
-        d().chips[sel] = { k:"note", stack:[{ st:p.st, oct:p.oct }], beats:c.beats };
-        store.save(); render();
-      } }));
-  }
-  mk("◀", () => { if (sel > 0) { const a = d().chips; [a[sel-1], a[sel]] = [a[sel], a[sel-1]]; sel--; store.save(); render(); } });
-  mk("▶", () => { if (sel < d().chips.length - 1) { const a = d().chips; [a[sel+1], a[sel]] = [a[sel], a[sel+1]]; sel++; store.save(); render(); } });
-  mk("Delete", () => { d().chips.splice(sel, 1); sel = null; store.save(); render(); }, "danger");
-  mk("✕", () => { sel = null; render(); });
-}
 
 /* ---------- playback (variable durations) ---------- */
 const playBtn = document.getElementById("playBtn");
