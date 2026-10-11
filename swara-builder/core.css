@@ -80,16 +80,21 @@ input[type=range] { width: 130px; accent-color: var(--accent); }
   background: var(--panel2); color: var(--muted); font-size: 13px; }
 .seg button.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 .sheet .hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
-#pkSel { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 2px; min-height: 42px; align-items: center;
-  border: 1px dashed var(--border); border-radius: 10px; margin-top: 8px; }
-#pkSel .hint { margin: 0; padding: 0 6px; }
-.selchip { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 20px;
-  background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); font-size: 15px; }
-.selchip .x { font-size: 13px; opacity: .7; }
+.stackbar { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; }
+.stacktgl { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--panel2); color: var(--text); font-size: 14px; white-space: nowrap; }
+.stacktgl.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+#pkSel { flex: 1; display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px; min-width: 0;
+  font-size: 15px; color: var(--text); white-space: nowrap; align-items: center; }
+#pkSel .ph { color: var(--muted); font-size: 13px; }
+.selchip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 16px;
+  background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent);
+  font-size: 14px; white-space: nowrap; }
+.selchip .x { font-size: 12px; opacity: .7; }
 .pbtn.picked { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-.donebtn { width: 100%; margin-top: 10px; padding: 12px; font-size: 16px; font-weight: 600;
-  background: var(--accent); color: #fff; border: none; border-radius: 12px; }
-.donebtn[disabled] { opacity: .4; }
+.donebtn2 { padding: 8px 12px; border-radius: 10px; border: none; background: var(--accent);
+  color: #fff; font-size: 16px; }
+.donebtn2[disabled] { opacity: .35; }
 
 /* flow strip */
 .strip { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
