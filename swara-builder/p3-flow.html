@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P3 · Flow Strip — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-24">
+<link rel="stylesheet" href="core.css?v=2026.10.11-25">
 </head>
 <body>
 <header class="top">
@@ -37,7 +37,7 @@
   <div class="strip" id="strip"></div>
 </div>
 
-<script src="core.js?v=2026.10.11-24"></script>
+<script src="core.js?v=2026.10.11-25"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -181,10 +181,13 @@ playBtn.onclick = async () => {
       else units.push({ note: sn, shares: 1 });
     });
     if (!units.length) return;
-    const sub = ev.dur / n;
+    const ownDur = ev.chip.beats * beat; // stack subdivides its OWN chip duration
+    const sub = ownDur / n;
+    const extra = ev.dur - ownDur; // outer holds extend the final sub-note only
     let st = ev.t;
-    units.forEach(u => {
-      const ud = u.shares * sub;
+    units.forEach((u, ui) => {
+      let ud = u.shares * sub;
+      if (ui === units.length - 1) ud += extra;
       SB.playNote(st, u.note.st, u.note.oct, d().saOffset, ud + Math.min(0.28, ud * 0.7));
       st += ud;
     });
