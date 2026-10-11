@@ -125,7 +125,10 @@ function onSlotTap(r, i) {
 function applyPick(r, i, p, stack) {
   const s = d().rows[r].slots[i];
   if (p.kind === "clear") d().rows[r].slots[i] = SB.emptySlot();
-  else if (p.kind === "hold") d().rows[r].slots[i] = { k:"hold" };
+  else if (p.kind === "hold") {
+    if (stack && s.k === "note") s.stack.push({ hold:true });
+    else d().rows[r].slots[i] = { k:"hold" };
+  }
   else if (p.kind === "gap") d().rows[r].slots[i] = { k:"gap" };
   else if (p.kind === "swara") {
     if (stack && s.k === "note") s.stack.push({ st:p.st, oct:p.oct });
@@ -150,8 +153,8 @@ function renderActionBar() {
   };
   if (s.k === "note") {
     mk("＋ Stack swara", () => SB.openPicker({ title:`Beat ${i+1} · add to stack`, ragaId:d().ragaId,
-      showSpecials:false,
-      onPick: p => { if (p.kind === "swara") applyPick(r, i, p, true); else applyPick(r, i, p, false); } }));
+      showSpecials:"hold",
+      onPick: p => applyPick(r, i, p, true) }));
     mk("Replace", () => SB.openPicker({ title:`Beat ${i+1} · replace`, ragaId:d().ragaId,
       onPick: p => applyPick(r, i, p, false) }));
   } else {
