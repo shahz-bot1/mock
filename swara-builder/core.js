@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.11-12";
+  const BUILD_VERSION = "2026.10.11-13";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -236,8 +236,9 @@ const SB = (() => {
   }
   /**
    * opts: {title, ragaId|null (null=chromatic), oct (default), showSpecials:true,
-   *        stackMode:bool (adds a single/stack toggle; stack mode multi-selects
-   *          in tap order, shown near the toggle, confirmed with ✓ Done),
+   *        stackMode:bool (shows the Stack toggle, off by default),
+   *        current: html shown under the title (e.g. current value in edit mode),
+   *        duration:{value, options[]} + onDuration(v) (e.g. P3 chip length),
    *        onPick({kind:'swara',st,oct}|{kind:'hold'|'gap'|'clear'}|{kind:'stack',stack})}
    */
   function openPicker(opts) {
@@ -245,9 +246,11 @@ const SB = (() => {
     const raga = opts.ragaId ? ragaById(opts.ragaId) : null;
     const list = raga ? ragaPickerList(raga) : CHROMATIC;
     let oct = opts.oct != null ? opts.oct : 0;
-    let stackOn = !!opts.stackMode;
+    let stackOn = !!opts.stackOn;
     let sel = []; // ordered multi-selection: [{st,oct}|{hold:true}]
+    let durVal = opts.duration ? opts.duration.value : null;
     const selLabel = n => n.hold ? "," : n.st + (n.oct > 0 ? "'" : n.oct < 0 ? "." : "");
+    const durLbl = b => b === 1 ? "1" : b === 0.5 ? "½" : b === 0.25 ? "¼" : b + "";
     const render = () => {
       const sub = st => {
         const m = st.match(/^([A-Z])(\d?)$/);
@@ -256,6 +259,7 @@ const SB = (() => {
       const inSel = st => sel.some(x => !x.hold && x.st === st && x.oct === oct);
       pickerEl.innerHTML =
         `<h3>${opts.title || "Pick swara"}</h3>` +
+        (opts.current ? `<div class="pkcur">Now: ${opts.current}</div>` : "") +
         `<div class="seg" id="pkOct">` +
           `<button data-o="-1" class="${oct===-1?"on":""}">low (˙S)</button>` +
           `<button data-o="0" class="${oct===0?"on":""}">middle</button>` +
@@ -271,6 +275,10 @@ const SB = (() => {
           `<button class="pbtn" data-sp="gap">– gap</button>` +
           `<button class="pbtn" data-sp="clear">✕ clear</button>`) +
         `</div>`) +
+        (opts.duration ? `<div class="pkdur"><span>Length</span><div class="seg" id="pkDur">` +
+          opts.duration.options.map(x =>
+            `<button data-d="${x}" class="${x === durVal ? "on" : ""}">${durLbl(x)}</button>`).join("") +
+          `</div></div>` : "") +
         (opts.stackMode ?
           `<div class="stackbar">` +
             `<button class="stacktgl${stackOn ? " on" : ""}" id="pkStackTgl">Stack ＋</button>` +
@@ -288,6 +296,11 @@ const SB = (() => {
           : (raga ? raga.name + " · tap a swara, or hold/gap/clear" : "Chromatic · all 16 sthanas")}</div>`;
       pickerEl.querySelectorAll("#pkOct button").forEach(b => b.onclick = () => {
         oct = +b.dataset.o; render();
+      });
+      pickerEl.querySelectorAll("#pkDur button").forEach(b => b.onclick = () => {
+        durVal = parseFloat(b.dataset.d);
+        if (opts.onDuration) opts.onDuration(durVal);
+        render();
       });
       const tgl = pickerEl.querySelector("#pkStackTgl");
       if (tgl) tgl.onclick = () => { stackOn = !stackOn; render(); };
