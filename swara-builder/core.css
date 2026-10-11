@@ -95,6 +95,10 @@ input[type=range] { width: 130px; accent-color: var(--accent); }
 .donebtn2 { padding: 8px 12px; border-radius: 10px; border: none; background: var(--accent);
   color: #fff; font-size: 16px; }
 .donebtn2[disabled] { opacity: .35; }
+.pkcur { font-size: 14px; color: var(--muted); margin: -6px 0 6px; }
+.pkdur { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.pkdur > span { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.pkdur .seg { flex: 1; margin: 0; }
 
 /* flow strip */
 .strip { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
