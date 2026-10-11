@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P1 · Adi Grid — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-12">
+<link rel="stylesheet" href="core.css?v=2026.10.11-13">
 </head>
 <body>
 <header class="top">
@@ -33,12 +33,7 @@
 </div>
 
 <div id="rows"></div>
-<div class="card" id="actionCard" style="display:none">
-  <h2>Beat <span id="abNum"></span></h2>
-  <div class="controls" id="actionBar"></div>
-</div>
-
-<script src="core.js?v=2026.10.11-12"></script>
+<script src="core.js?v=2026.10.11-13"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -66,7 +61,6 @@ const loopEl = document.getElementById("loop");
 loopEl.checked = !!d().loop;
 loopEl.onchange = () => { d().loop = loopEl.checked; store.save(); };
 
-let sel = null; // {row, slot}
 function render() {
   const host = document.getElementById("rows");
   host.innerHTML = "";
@@ -88,8 +82,7 @@ function render() {
     row.slots.forEach((s, i) => {
       const el = document.createElement("div");
       el.className = "slot" +
-        (s.k === "note" ? " filled" : s.k === "hold" ? " hold" : s.k === "gap" ? " gap" : "") +
-        (sel && sel.row === r && sel.slot === i ? " cur" : "");
+        (s.k === "note" ? " filled" : s.k === "hold" ? " hold" : s.k === "gap" ? " gap" : "");
       el.innerHTML = SB.slotLabelHTML(s) || (s.k === "empty" ? "+" : "");
       if (i === 3 || i === 5) el.style.borderRight = "2px solid var(--accent)";
       el.onclick = () => onSlotTap(r, i);
@@ -107,68 +100,39 @@ function render() {
   // keep single footer
   const foots = document.querySelectorAll(".foot");
   foots.forEach((f, i) => { if (i < foots.length - 1) f.remove(); });
-  renderActionBar();
 }
 
 function onSlotTap(r, i) {
   const s = d().rows[r].slots[i];
   if (s.k === "empty") {
-    sel = null;
-    SB.openPicker({ title:`Row ${r+1} · beat ${i+1}`, ragaId:d().ragaId, onPick: p => {
-      applyPick(r, i, p, false); } });
+    SB.openPicker({ title:`Row ${r+1} · beat ${i+1}`, ragaId:d().ragaId, stackMode:true,
+      onPick: p => addPick(r, i, p) });
   } else {
-    sel = (sel && sel.row === r && sel.slot === i) ? null : { row:r, slot:i };
+    SB.openPicker({ title:`Row ${r+1} · beat ${i+1} · edit`, ragaId:d().ragaId, stackMode:true,
+      current:`Now: ${SB.slotLabelHTML(s) || "–"}`,
+      onPick: p => editPick(r, i, p) });
   }
-  render();
 }
 
-function applyPick(r, i, p, stack) {
-  const s = d().rows[r].slots[i];
-  if (p.kind === "clear") d().rows[r].slots[i] = SB.emptySlot();
-  else if (p.kind === "hold") {
-    if (stack && s.k === "note") s.stack.push({ hold:true });
-    else d().rows[r].slots[i] = { k:"hold" };
-  }
+function addPick(r, i, p) {
+  if (p.kind === "swara") d().rows[r].slots[i] = { k:"note", stack:[{ st:p.st, oct:p.oct }] };
+  else if (p.kind === "hold") d().rows[r].slots[i] = { k:"hold" };
   else if (p.kind === "gap") d().rows[r].slots[i] = { k:"gap" };
-  else if (p.kind === "swara") {
-    if (stack && s.k === "note") s.stack.push({ st:p.st, oct:p.oct });
-    else d().rows[r].slots[i] = { k:"note", stack:[{ st:p.st, oct:p.oct }] };
-  }
+  else if (p.kind === "stack") d().rows[r].slots[i] = { k:"note", stack:p.stack };
   store.save(); render();
 }
 
-function renderActionBar() {
-  const card = document.getElementById("actionCard");
-  if (!sel) { card.style.display = "none"; return; }
-  card.style.display = "";
-  const { row:r, slot:i } = sel;
+function editPick(r, i, p) {
   const s = d().rows[r].slots[i];
-  document.getElementById("abNum").textContent = `${r+1} · ${i+1}`;
-  const bar = document.getElementById("actionBar");
-  bar.innerHTML = "";
-  const mk = (label, fn, cls) => {
-    const b = document.createElement("button");
-    b.className = "btn " + (cls || "ghost"); b.textContent = label;
-    b.onclick = fn; bar.appendChild(b);
-  };
-  if (s.k === "note") {
-    mk("＋ Stack", () => SB.openPicker({ title:`Beat ${i+1} · stack`, ragaId:d().ragaId,
-      showSpecials:"hold", stackMode:true,
-      onPick: p => {
-        if (p.kind === "stack") p.stack.forEach(n =>
-          applyPick(r, i, n.hold ? { kind:"hold" } : { kind:"swara", st:n.st, oct:n.oct }, true));
-        else applyPick(r, i, p, true);
-      } }));
-    mk("Replace", () => SB.openPicker({ title:`Beat ${i+1} · replace`, ragaId:d().ragaId,
-      onPick: p => applyPick(r, i, p, false) }));
-  } else {
-    mk("Fill swara", () => SB.openPicker({ title:`Beat ${i+1}`, ragaId:d().ragaId,
-      onPick: p => applyPick(r, i, p, false) }));
+  if (p.kind === "clear") d().rows[r].slots[i] = SB.emptySlot();
+  else if (p.kind === "hold") d().rows[r].slots[i] = { k:"hold" };
+  else if (p.kind === "gap") d().rows[r].slots[i] = { k:"gap" };
+  else if (p.kind === "swara") d().rows[r].slots[i] = { k:"note", stack:[{ st:p.st, oct:p.oct }] };
+  else if (p.kind === "stack") {
+    if (s.k === "note") p.stack.forEach(n => s.stack.push(n));
+    else d().rows[r].slots[i] = { k:"note", stack:p.stack };
   }
-  mk("Hold ,", () => applyPick(r, i, { kind:"hold" }, false));
-  mk("Gap –", () => applyPick(r, i, { kind:"gap" }, false));
-  mk("Clear", () => { sel = null; applyPick(r, i, { kind:"clear" }, false); });
-  mk("✕", () => { sel = null; render(); });
+  store.save(); render();
 }
 
 /* ---------- playback ---------- */
