@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.11-9";
+  const BUILD_VERSION = "2026.10.11-10";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -262,18 +262,17 @@ const SB = (() => {
           `<button data-o="1" class="${oct===1?"on":""}">high (S˙)</button>` +
         `</div>` +
         (opts.stackMode ?
-          `<div class="seg" id="pkMode">` +
-            `<button data-m="single" class="${!stackOn?"on":""}">single</button>` +
-            `<button data-m="stack" class="${stackOn?"on":""}">stack ＋</button>` +
-          `</div>` +
-          (stackOn ?
-            `<div id="pkSel">` +
-              (sel.length ? sel.map((n, i) =>
-                `<button class="selchip" data-i="${i}">${selLabel(n)}<span class="x">×</span></button>`
-              ).join("") : `<span class="hint">tap swaras in order…</span>`) +
-            `</div>` +
-            `<button class="pbtn donebtn" id="pkDone" ${sel.length ? "" : "disabled"}>✓ Done${sel.length ? ` (${sel.length})` : ""}</button>`
-          : "")
+          `<div class="stackbar">` +
+            `<button class="stacktgl${stackOn ? " on" : ""}" id="pkStackTgl">Stack ＋</button>` +
+            (stackOn ?
+              `<div id="pkSel">` +
+                (sel.length ? sel.map((n, i) =>
+                  `<button class="selchip" data-i="${i}">${selLabel(n)}<span class="x">×</span></button>`
+                ).join("") : `<span class="ph">tap swaras…</span>`) +
+              `</div>` +
+              `<button class="donebtn2" id="pkDone" ${sel.length ? "" : "disabled"}>✅</button>`
+            : "") +
+          `</div>`
         : "") +
         `<div class="pgrid">` +
           list.map(s => `<button class="pbtn${stackOn && inSel(s) ? " picked" : ""}" data-st="${s}">${sub(s)}</button>`).join("") +
@@ -290,9 +289,8 @@ const SB = (() => {
       pickerEl.querySelectorAll("#pkOct button").forEach(b => b.onclick = () => {
         oct = +b.dataset.o; render();
       });
-      pickerEl.querySelectorAll("#pkMode button").forEach(b => b.onclick = () => {
-        stackOn = b.dataset.m === "stack"; render();
-      });
+      const tgl = pickerEl.querySelector("#pkStackTgl");
+      if (tgl) tgl.onclick = () => { stackOn = !stackOn; render(); };
       pickerEl.querySelectorAll("[data-st]").forEach(b => b.onclick = () => {
         const st = b.dataset.st;
         if (stackOn) {
