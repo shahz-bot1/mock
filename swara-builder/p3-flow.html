@@ -126,9 +126,22 @@ function renderActionBar() {
   });
   if (c.k === "note") {
     mk("＋ Stack", () => SB.openPicker({ title:"Stack onto chip", ragaId:d().ragaId,
+      showSpecials:false,
       onPick: p => { if (p.kind === "swara") { c.stack.push({ st:p.st, oct:p.oct }); store.save(); render(); } } }));
     mk("Replace", () => SB.openPicker({ title:"Replace chip", ragaId:d().ragaId,
-      onPick: p => { if (p.kind === "swara") { c.stack = [{ st:p.st, oct:p.oct }]; store.save(); render(); } } }));
+      onPick: p => {
+        if (p.kind === "swara") d().chips[sel] = { k:"note", stack:[{ st:p.st, oct:p.oct }], beats:c.beats };
+        else if (p.kind === "hold" || p.kind === "gap") d().chips[sel] = { k:p.kind, beats:c.beats };
+        else return;
+        store.save(); render();
+      } }));
+  } else {
+    mk("Set swara", () => SB.openPicker({ title:"Set swara", ragaId:d().ragaId,
+      onPick: p => {
+        if (p.kind !== "swara") return;
+        d().chips[sel] = { k:"note", stack:[{ st:p.st, oct:p.oct }], beats:c.beats };
+        store.save(); render();
+      } }));
   }
   mk("◀", () => { if (sel > 0) { const a = d().chips; [a[sel-1], a[sel]] = [a[sel], a[sel-1]]; sel--; store.save(); render(); } });
   mk("▶", () => { if (sel < d().chips.length - 1) { const a = d().chips; [a[sel+1], a[sel]] = [a[sel], a[sel+1]]; sel++; store.save(); render(); } });
