@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P3 · Flow Strip — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.12-2">
+<link rel="stylesheet" href="core.css?v=2026.10.12-3">
 </head>
 <body>
 <header class="top">
@@ -38,7 +38,7 @@
   <div class="strip" id="strip"></div>
 </div>
 
-<script src="core.js?v=2026.10.12-2"></script>
+<script src="core.js?v=2026.10.12-3"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -90,22 +90,32 @@ function chipLabel(c) {
   return c.k === "note" ? SB.slotLabelHTML({ k:"note", stack:c.stack })
     : c.k === "hold" ? "," : "–";
 }
+function pickNewChip(title, done) {
+  let beats = 1;
+  SB.openPicker({ title, ragaId:d().ragaId, stackMode:true,
+    duration:{ value:beats, options:DURS },
+    onDuration: v => { beats = v; },
+    onPick: p => {
+      if (p.kind === "swara") done({ k:"note", stack:[{ st:p.st, oct:p.oct }], beats });
+      else if (p.kind === "hold") done({ k:"hold", beats });
+      else if (p.kind === "gap") done({ k:"gap", beats });
+      else if (p.kind === "stack") done({ k:"note", stack:p.stack, beats });
+    }});
+}
 function onChipTap(i) {
   if (i < 0) {
-    let beats = 1;
-    SB.openPicker({ title:"Append swara", ragaId:d().ragaId, stackMode:true,
-      duration:{ value:beats, options:DURS },
-      onDuration: v => { beats = v; },
-      onPick: p => {
-        if (p.kind === "swara") addChip({ k:"note", stack:[{ st:p.st, oct:p.oct }], beats });
-        else if (p.kind === "hold") addChip({ k:"hold", beats });
-        else if (p.kind === "gap") addChip({ k:"gap", beats });
-        else if (p.kind === "stack") addChip({ k:"note", stack:p.stack, beats });
-      }});
+    pickNewChip("Append swara", chip => addChip(chip));
     return;
   }
   const c = d().chips[i];
   SB.openPicker({ title:`Edit chip #${i + 1}`, ragaId:d().ragaId, stackMode:true,
+    insert: true,
+    onInsert: where => {
+      const at = where === "before" ? i : i + 1;
+      pickNewChip(`Insert ${where} chip #${i + 1}`, chip => {
+        stop(); d().chips.splice(at, 0, chip); store.save(); render();
+      });
+    },
     current:`Now: ${chipLabel(c)}`,
     prefill: c.k === "note" ? c.stack : c.k === "hold" ? [{ hold:true }] : null,
     stackOn: c.k === "note" && c.stack.length > 1,
