@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Compose Studio — Swara Builder</title>
-<link rel="stylesheet" href="../swara-builder/core.css?v=2026.10.12-2">
+<link rel="stylesheet" href="../swara-builder/core.css?v=2026.10.12-3">
 <style>
   .crow { display: flex; align-items: center; gap: 12px; background: var(--panel);
           border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
@@ -74,7 +74,7 @@
   </div>
 </div>
 
-<script src="../swara-builder/core.js?v=2026.10.12-2"></script>
+<script src="../swara-builder/core.js?v=2026.10.12-3"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -315,26 +315,39 @@ function renderEditor() {
   renderStrip();
   refreshPlayButtons();
 }
+function pickNewChip(title, ragaId, done) {
+  let beats = 1;
+  SB.openPicker({ title, ragaId, stackMode: true,
+    duration: { value: beats, options: DURS },
+    onDuration: v => { beats = v; },
+    onPick: p => {
+      if (p.kind === "swara") done({ k: "note", stack: [{ st: p.st, oct: p.oct }], beats });
+      else if (p.kind === "hold") done({ k: "hold", beats });
+      else if (p.kind === "gap") done({ k: "gap", beats });
+      else if (p.kind === "stack") done({ k: "note", stack: p.stack, beats });
+    }});
+}
 function onChipTap(i) {
   const c = cur(); if (!c) return;
   if (i < 0) {
-    let beats = 1;
-    SB.openPicker({ title: "Append swara", ragaId: c.ragaId, stackMode: true,
-      duration: { value: beats, options: DURS },
-      onDuration: v => { beats = v; },
-      onPick: p => {
-        stopPlayback();
-        if (p.kind === "swara") c.chips.push({ k: "note", stack: [{ st: p.st, oct: p.oct }], beats });
-        else if (p.kind === "hold") c.chips.push({ k: "hold", beats });
-        else if (p.kind === "gap") c.chips.push({ k: "gap", beats });
-        else if (p.kind === "stack") c.chips.push({ k: "note", stack: p.stack, beats });
-        else return;
-        touch(c); renderStrip(); refreshPlayButtons();
-      }});
+    pickNewChip("Append swara", c.ragaId, chip => {
+      stopPlayback();
+      c.chips.push(chip);
+      touch(c); renderStrip(); refreshPlayButtons();
+    });
     return;
   }
   const ch = c.chips[i];
   SB.openPicker({ title: `Edit chip #${i + 1}`, ragaId: c.ragaId, stackMode: true,
+    insert: true,
+    onInsert: where => {
+      const at = where === "before" ? i : i + 1;
+      pickNewChip(`Insert ${where} chip #${i + 1}`, c.ragaId, chip => {
+        stopPlayback();
+        c.chips.splice(at, 0, chip);
+        touch(c); renderStrip(); refreshPlayButtons();
+      });
+    },
     current: `Now: ${chipLabel(ch)}`,
     prefill: ch.k === "note" ? ch.stack : ch.k === "hold" ? [{ hold: true }] : null,
     stackOn: ch.k === "note" && ch.stack.length > 1,
