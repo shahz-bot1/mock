@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>P3 · Flow Strip — Swara Builder</title>
-<link rel="stylesheet" href="core.css?v=2026.10.11-25">
+<link rel="stylesheet" href="core.css?v=2026.10.12-1">
 </head>
 <body>
 <header class="top">
@@ -26,6 +26,7 @@
     <button class="btn ghost" id="addGap">＋ Gap</button>
     <button class="btn ghost" id="addHold">＋ Hold ,</button>
     <button class="btn danger" id="clearBtn">Clear</button>
+    <button class="btn ghost" id="exportBtn">Export</button>
   </div>
   <p class="note">Tap a chip to edit it: cycle its duration (¼ → ½ → 1 → 2 → 4 beats), stack more swaras,
   move or delete. Total beats: <b id="totBeats">0</b>. This is the free-time answer to P1's grid —
@@ -37,7 +38,7 @@
   <div class="strip" id="strip"></div>
 </div>
 
-<script src="core.js?v=2026.10.11-25"></script>
+<script src="core.js?v=2026.10.12-1"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -126,6 +127,22 @@ document.getElementById("addHold").onclick = () => addChip({ k:"hold", beats:1 }
 document.getElementById("clearBtn").onclick = () => {
   if (!confirm("Clear phrase?")) return;
   stop(); d().chips = []; store.save(); render();
+};
+document.getElementById("exportBtn").onclick = () => {
+  const payload = {
+    app: "Compose Studio", version: 1, kind: "composition",
+    composition: {
+      name: "Flow Strip phrase",
+      ragaId: d().ragaId, saOffset: d().saOffset, tempo: d().tempo,
+      chips: d().chips,
+    },
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "flow-strip-phrase.json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 };
 
 /* ---------- playback (variable durations) ---------- */
