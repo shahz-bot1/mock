@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.12-2";
+  const BUILD_VERSION = "2026.10.12-3";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -244,6 +244,7 @@ const SB = (() => {
   /**
    * opts: {title, ragaId|null (null=chromatic), oct (default), showSpecials:true,
    *        stackMode:bool (shows the Stack toggle, off by default),
+   *        insert:bool + onInsert(where) (edit sheets: "insert before/after" row),
    *        prefill:[{st,oct}|{hold:true}] (initial stack selection, e.g. current
    *          value in edit mode),
    *        current: html shown under the title (e.g. current value in edit mode),
@@ -284,6 +285,11 @@ const SB = (() => {
           `<button class="pbtn" data-sp="gap">– gap</button>` +
           `<button class="pbtn" data-sp="clear">✕ clear</button>`) +
         `</div>`) +
+        (opts.insert ?
+        `<div class="prow">` +
+          `<button class="pbtn" data-ins="before">＋ insert before</button>` +
+          `<button class="pbtn" data-ins="after">insert after ＋</button>` +
+        `</div>` : "") +
         (opts.duration ? `<div class="pkdur"><span>Length</span><div class="seg" id="pkDur">` +
           opts.duration.options.map(x =>
             `<button data-d="${x}" class="${x === durVal ? "on" : ""}">${durLbl(x)}</button>`).join("") +
@@ -321,6 +327,10 @@ const SB = (() => {
       pickerEl.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => {
         if (stackOn && b.dataset.sp === "hold") { sel.push({ hold:true }); render(); return; }
         closePicker(); opts.onPick({ kind:b.dataset.sp });
+      });
+      pickerEl.querySelectorAll("[data-ins]").forEach(b => b.onclick = () => {
+        const where = b.dataset.ins;
+        closePicker(); if (opts.onInsert) opts.onInsert(where);
       });
       pickerEl.querySelectorAll(".selchip").forEach(b => b.onclick = () => {
         sel.splice(+b.dataset.i, 1); render();
