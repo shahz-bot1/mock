@@ -103,7 +103,9 @@ Adi tala only for now.
       splices at i / i+1. Wired in Compose + P3; build 2026.10.12-3. Moved
       2026-10-13 (user request): a ＋ button at the sheet's top-right opens a
       popover with "Insert before" / "Insert after" (the two-button row is
-      gone); build 2026.10.13-3.
+      gone); build 2026.10.13-3. The popover dismisses on any other tap inside
+      the sheet (capture-phase listener, tap swallowed so the control under it
+      doesn't also fire); build 2026.10.13-4.
 - [x] Crossfaded sustain loop (2026-10-13, user-reported + approved): a long
       hold changed character ~5 beats in — the hard buffer loop jumped from
       the sample tail back to 0.5s. playNote now loops the sustain as a chain
