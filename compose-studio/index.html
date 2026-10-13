@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Compose Studio — Swara Builder</title>
-<link rel="stylesheet" href="../swara-builder/core.css?v=2026.10.13-4">
+<link rel="stylesheet" href="../swara-builder/core.css?v=2026.10.13-5">
 <style>
   .crow { display: flex; align-items: center; gap: 12px; background: var(--panel);
           border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
@@ -25,6 +25,9 @@
           border-bottom: 1px solid var(--border); padding: 4px 2px; }
   .titlein:focus { outline: none; border-bottom-color: var(--accent); }
   .switch { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
+  #rawText { width: 100%; box-sizing: border-box; font-family: ui-monospace, Menlo, monospace;
+          font-size: 12.5px; line-height: 1.55; color: var(--text); background: var(--panel2);
+          border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
   .hidden { display: none; }
 </style>
 </head>
@@ -53,7 +56,7 @@
     <a class="back" href="#" id="backBtn">‹ Compositions</a>
     <input class="titlein" id="compName" type="text" placeholder="Composition name">
   </div>
-  <div class="card">
+  <div class="card" id="setupCard">
     <h2>Setup</h2>
     <div class="controls">
       <label class="f">Raga<span id="ragaSlot"></span></label>
@@ -64,17 +67,29 @@
     <div class="controls" style="margin-top:10px">
       <button class="btn" id="edPlay">▶ Play</button>
       <button class="btn ghost" id="exportBtn">Export</button>
+      <button class="btn ghost" id="rawBtn">{ } JSON</button>
       <button class="btn danger" id="deleteBtn">Delete</button>
     </div>
     <p class="note">Tap a chip to edit it, or ＋ to append. Total beats: <b id="totBeats">0</b>.</p>
   </div>
-  <div class="card">
+  <div class="card" id="phraseCard">
     <h2>Phrase</h2>
     <div class="strip" id="strip"></div>
   </div>
+  <div class="card hidden" id="rawCard">
+    <h2>Raw JSON</h2>
+    <textarea id="rawText" rows="16" spellcheck="false"></textarea>
+    <div class="controls" style="margin-top:10px">
+      <button class="btn" id="rawApply">Apply</button>
+      <button class="btn ghost" id="rawCopy">Copy all</button>
+      <button class="btn ghost" id="rawCancel">Cancel</button>
+    </div>
+    <p class="note">One chip per line — copy a section and paste it elsewhere to repeat it.
+    Apply validates everything first (same checks as Import); nothing is saved until it passes.</p>
+  </div>
 </div>
 
-<script src="../swara-builder/core.js?v=2026.10.13-4"></script>
+<script src="../swara-builder/core.js?v=2026.10.13-5"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -409,14 +424,70 @@ document.getElementById("deleteBtn").onclick = () => {
 };
 document.getElementById("backBtn").onclick = e => { e.preventDefault(); showList(); };
 
+/* ---------- raw JSON mode ---------- */
+let rawMode = false;
+function compToRawText(c) {
+  const head = [
+    '  "name": ' + JSON.stringify(c.name || ""),
+    '  "ragaId": ' + JSON.stringify(c.ragaId || null),
+    '  "saOffset": ' + (c.saOffset | 0),
+    '  "tempo": ' + c.tempo,
+    '  "loop": ' + (c.loop ? "true" : "false"),
+  ];
+  let s = "{\n" + head.join(",\n") + ',\n  "chips": [';
+  if (c.chips.length)
+    s += "\n" + c.chips.map(ch => "    " + JSON.stringify(ch)).join(",\n") + "\n  ";
+  return s + "]\n}";
+}
+function setRawMode(on) {
+  const c = cur();
+  rawMode = !!on && !!c;
+  if (rawMode) {
+    stopPlayback();
+    document.getElementById("rawText").value = compToRawText(c);
+  }
+  document.getElementById("rawCard").classList.toggle("hidden", !rawMode);
+  document.getElementById("setupCard").classList.toggle("hidden", rawMode);
+  document.getElementById("phraseCard").classList.toggle("hidden", rawMode);
+  document.getElementById("rawBtn").textContent = rawMode ? "♪ Phrase" : "{ } JSON";
+}
+document.getElementById("rawBtn").onclick = () => setRawMode(!rawMode);
+document.getElementById("rawCancel").onclick = () => setRawMode(false);
+document.getElementById("rawApply").onclick = () => {
+  const c = cur(); if (!c) return;
+  let obj;
+  try { obj = JSON.parse(document.getElementById("rawText").value); }
+  catch (e) { alert("Invalid JSON: " + e.message); return; }
+  const clean = sanitizeComposition(obj);
+  if (!clean) { alert("That doesn't look like a valid composition — check the chips and try again."); return; }
+  stopPlayback();
+  c.name = clean.name; c.ragaId = clean.ragaId; c.saOffset = clean.saOffset;
+  c.tempo = clean.tempo; c.loop = clean.loop; c.chips = clean.chips;
+  touch(c);
+  setRawMode(false);
+  renderEditor();
+};
+document.getElementById("rawCopy").onclick = async () => {
+  const ta = document.getElementById("rawText");
+  const btn = document.getElementById("rawCopy");
+  try { await navigator.clipboard.writeText(ta.value); }
+  catch (e) {
+    ta.focus(); ta.select();
+    try { document.execCommand("copy"); } catch (e2) {}
+  }
+  const old = btn.textContent;
+  btn.textContent = "Copied ✓";
+  setTimeout(() => { btn.textContent = old; }, 1200);
+};
+
 /* ---------- navigation ---------- */
 function render() {
   document.getElementById("listView").classList.toggle("hidden", view !== "list");
   document.getElementById("editorView").classList.toggle("hidden", view !== "editor");
   if (view === "list") renderList(); else renderEditor();
 }
-function showList() { stopPlayback(); view = "list"; openId = null; render(); }
-function openEditor(id) { stopPlayback(); view = "editor"; openId = id; render(); }
+function showList() { stopPlayback(); setRawMode(false); view = "list"; openId = null; render(); }
+function openEditor(id) { stopPlayback(); setRawMode(false); view = "editor"; openId = id; render(); }
 
 document.body.appendChild(SB.footer());
 render();
