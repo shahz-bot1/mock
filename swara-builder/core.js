@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.12-3";
+  const BUILD_VERSION = "2026.10.13-1";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -102,30 +102,68 @@ const SB = (() => {
   function noteSemitone(st, oct, saOffset) {
     return SEMI[st] + oct * 12 + saOffset; // semitones above C4
   }
+  /* Play a sample under the master gain `out`; returns the started sources.
+   * Notes longer than the sample loop the sustain section as a chain of
+   * overlapping segments with crossfades, so a long hold never hits the hard
+   * loop jump (audible swell/timbre change) of a plain buffer loop. */
+  function scheduleSample(t, buf, rate, soundDur, out) {
+    const dur = buf.duration || 0;
+    const need = (soundDur + 0.25) * rate; // buffer-seconds we must cover
+    const mk = () => {
+      const s = actx.createBufferSource();
+      s.buffer = buf; s.playbackRate.value = rate;
+      return s;
+    };
+    if (!dur || need <= dur - 0.05 || dur <= 2.5) {
+      const s = mk(); s.connect(out);
+      if (dur > 1 && need > dur - 0.05) { // tiny-buffer fallback: hard loop
+        try { s.loop = true; s.loopStart = 0.1; s.loopEnd = dur - 0.1; } catch (e) {}
+      }
+      s.start(t); s.stop(t + soundDur + 0.18);
+      return [s];
+    }
+    const XF = Math.min(0.6, dur * 0.2);            // crossfade (buffer seconds)
+    const s0 = Math.min(0.5, dur * 0.1);            // sustain start (post-attack)
+    const s1 = Math.max(s0 + XF + 0.3, dur - 0.5);  // sustain end
+    const xfR = XF / rate, endNeed = t + soundDur + 0.25;
+    const sources = [];
+    let prev = null, start = t, offset = 0;
+    while (sources.length < 64) {
+      const src = mk();
+      const sg = actx.createGain();
+      src.connect(sg); sg.connect(out);
+      if (prev) {
+        sg.gain.setValueAtTime(0.0001, start);
+        sg.gain.exponentialRampToValueAtTime(1, start + xfR);
+        prev.sg.gain.setValueAtTime(1, start);
+        prev.sg.gain.exponentialRampToValueAtTime(0.0001, start + xfR);
+        prev.src.stop(start + xfR + 0.05);
+      } else {
+        sg.gain.setValueAtTime(1, start);
+      }
+      src.start(start, offset);
+      sources.push(src);
+      const reachEnd = start + (s1 - offset) / rate;
+      prev = { src, sg };
+      if (reachEnd >= endNeed) { src.stop(t + soundDur + 0.18); break; }
+      start = reachEnd - xfR;
+      offset = s0;
+    }
+    return sources;
+  }
   function playNote(t, st, oct, saOffset, soundDur, vol) {
     const semi = noteSemitone(st, oct, saOffset);
     const { file, rate } = sampleFor(semi);
     const buf = sampleBufs[file];
     const v = vol == null ? 0.9 : vol;
     if (buf) {
-      const src = actx.createBufferSource();
-      src.buffer = buf; src.playbackRate.value = rate;
-      // loop the sustain section so notes longer than the sample never go silent
-      if (buf.duration && buf.duration > 1) {
-        try {
-          src.loop = true;
-          src.loopStart = Math.min(0.5, buf.duration * 0.1);
-          src.loopEnd = Math.max(src.loopStart + 0.2, buf.duration - 0.5);
-        } catch (e) { /* ignore */ }
-      }
       const g = actx.createGain();
       g.gain.setValueAtTime(0.0001, t);
       g.gain.exponentialRampToValueAtTime(v, t + 0.02);
       g.gain.setValueAtTime(v, t + Math.max(0.02, soundDur - 0.1));
       g.gain.exponentialRampToValueAtTime(0.0001, t + soundDur + 0.12);
-      src.connect(g); g.connect(actx.destination);
-      src.start(t); src.stop(t + soundDur + 0.18);
-      activeNodes.push(src);
+      g.connect(actx.destination);
+      scheduleSample(t, buf, rate, soundDur, g).forEach(s => activeNodes.push(s));
       return true;
     }
     // synth fallback
