@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.13-7";
+  const BUILD_VERSION = "2026.10.13-8";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -55,6 +55,21 @@ const SB = (() => {
       const m = n.st.match(/^([A-Z])(\d?)$/);
       const inner = m ? m[1] + (m[2] ? "<sub>"+m[2]+"</sub>" : "") : n.st;
       return `<span class="st ${cls}">${inner}</span>`;
+    }).join("");
+  };
+
+  /* chip label: octave as a combining dot ON the letter glyph (print style,
+     user-chosen 2026-10-13); slots keep the CSS-dot slotLabelHTML above */
+  const chipLabelHTML = slot => {
+    if (slot.k === "hold") return ",";
+    if (slot.k === "gap") return "–";
+    if (slot.k !== "note" || !slot.stack.length) return "";
+    return slot.stack.map(n => {
+      if (n.hold) return `<span class="st">,</span>`;
+      const m = n.st.match(/^([A-Z])(\d?)$/);
+      if (!m) return `<span class="st">${n.st}</span>`;
+      const dot = n.oct > 0 ? "\u0307" : n.oct < 0 ? "\u0323" : "";
+      return `<span class="st">${m[1]}${dot}${m[2] ? "<sub>"+m[2]+"</sub>" : ""}</span>`;
     }).join("");
   };
 
@@ -463,7 +478,7 @@ const SB = (() => {
 
   return {
     BUILD_VERSION, SEMI, CHROMATIC, RAGAS, SA_NAMES,
-    ragaById, ragaPickerList, emptySlot, slotLabelHTML, shortLabel,
+    ragaById, ragaPickerList, emptySlot, slotLabelHTML, chipLabelHTML, shortLabel,
     ensureAudio, ensureSamples, playNote, stopAll, playRows, sampleFor, noteSemitone,
     openPicker, closePicker, save, load, applyTheme, themeBtn, footer,
     ragaSelect, saSelect,
