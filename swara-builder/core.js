@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.13-1";
+  const BUILD_VERSION = "2026.10.13-2";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -102,6 +102,23 @@ const SB = (() => {
   function noteSemitone(st, oct, saOffset) {
     return SEMI[st] + oct * 12 + saOffset; // semitones above C4
   }
+  /* Equal-power crossfade curves for the sustain loop: fadeIn² + fadeOut² = 1
+   * at every point, so the combined level never dips or swells mid-crossfade
+   * (a linear pair dips −3dB on uncorrelated content; an exponential pair —
+   * the first attempt — collapses almost to silence at the centre). */
+  const XF_N = 33;
+  const XF_IN = new Float32Array(XF_N), XF_OUT = new Float32Array(XF_N);
+  for (let i = 0; i < XF_N; i++) {
+    const ph = (i / (XF_N - 1)) * Math.PI / 2;
+    XF_IN[i] = Math.sin(ph); XF_OUT[i] = Math.cos(ph);
+  }
+  function xfC(gainParam, curve, t0, dur) {
+    try { gainParam.setValueCurveAtTime(curve, t0, dur); }
+    catch (e) { // fallback: linear pair
+      gainParam.setValueAtTime(curve === XF_IN ? 0 : 1, t0);
+      gainParam.linearRampToValueAtTime(curve === XF_IN ? 1 : 0, t0 + dur);
+    }
+  }
   /* Play a sample under the master gain `out`; returns the started sources.
    * Notes longer than the sample loop the sustain section as a chain of
    * overlapping segments with crossfades, so a long hold never hits the hard
@@ -122,7 +139,7 @@ const SB = (() => {
       s.start(t); s.stop(t + soundDur + 0.18);
       return [s];
     }
-    const XF = Math.min(0.6, dur * 0.2);            // crossfade (buffer seconds)
+    const XF = Math.min(0.8, dur * 0.2);            // crossfade (buffer seconds)
     const s0 = Math.min(0.5, dur * 0.1);            // sustain start (post-attack)
     const s1 = Math.max(s0 + XF + 0.3, dur - 0.5);  // sustain end
     const xfR = XF / rate, endNeed = t + soundDur + 0.25;
@@ -133,10 +150,8 @@ const SB = (() => {
       const sg = actx.createGain();
       src.connect(sg); sg.connect(out);
       if (prev) {
-        sg.gain.setValueAtTime(0.0001, start);
-        sg.gain.exponentialRampToValueAtTime(1, start + xfR);
-        prev.sg.gain.setValueAtTime(1, start);
-        prev.sg.gain.exponentialRampToValueAtTime(0.0001, start + xfR);
+        xfC(sg.gain, XF_IN, start, xfR);
+        xfC(prev.sg.gain, XF_OUT, start, xfR);
         prev.src.stop(start + xfR + 0.05);
       } else {
         sg.gain.setValueAtTime(1, start);
