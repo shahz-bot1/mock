@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Octave-dot chips — proposal</title>
+<title>Octave dot alignment — fix proposal</title>
 <style>
 :root { --bg:#101318; --panel:#171c24; --panel2:#1f2631; --text:#e8ecf2; --muted:#9aa4b2;
   --border:#2a323e; --accent:#5b9dff; --warn:#fbbf24; }
@@ -14,41 +14,56 @@ p { color:var(--muted); font-size:14px; line-height:1.5; }
 .strip { display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; }
 .fchip { background:var(--panel2); border:1.5px solid var(--accent); border-radius:12px;
   padding:10px 12px; font-size:16px; font-weight:700; min-width:56px; text-align:center; }
-.fchip.gapc, .fchip.holdc { border-color:var(--border); color:var(--muted); }
 .fchip .dur { display:block; font-size:10px; color:var(--muted); font-weight:400; margin-top:2px; }
 .fchip sub { font-size:10px; color:var(--muted); }
 
-/* DOT proposal: each swara is an inline-flex column [top dot slot][letter][bottom dot slot];
-   slots always reserved so letters share one baseline */
-.DOT .st { display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.05; }
-.DOT .st::before { content:""; display:block; height:9px; font-size:11px; line-height:9px; color:var(--accent); }
-.DOT .st::after { content:""; display:block; height:9px; font-size:13px; line-height:9px; color:var(--accent); }
-.DOT .st.oct-up::before { content:"˙"; }
-.DOT .st.oct-dn::after { content:"."; }
+/* NOW: shipped design — letter+subscript inside one inline-flex column, dot centers over both */
+.NOW .st { display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.05; }
+.NOW .st::before { content:""; display:block; height:9px; font-size:11px; line-height:9px; color:var(--accent); }
+.NOW .st::after { content:""; display:block; height:9px; font-size:13px; line-height:9px; color:var(--accent); }
+.NOW .st.oct-up::before { content:"˙"; }
+.NOW .st.oct-dn::after { content:"."; }
+
+/* FIX: letter alone in the dot column; subscript trails outside it */
+.FIX .st { display:inline-block; vertical-align:middle; line-height:1.05; }
+.FIX .lt { display:inline-flex; flex-direction:column; align-items:center; line-height:1.05; }
+.FIX .lt::before { content:""; display:block; height:9px; font-size:11px; line-height:9px; color:var(--accent); }
+.FIX .lt::after { content:""; display:block; height:9px; font-size:13px; line-height:9px; color:var(--accent); }
+.FIX .lt.oct-up::before { content:"˙"; }
+.FIX .lt.oct-dn::after { content:"."; }
 </style>
 </head>
 <body>
-<p>Same chips in both cards — a low R1 with holds, an all-upper N3 R1 run, a held S, a gap, and a
-long stack with a low note inside. Top card = current live design (no dots). Bottom = proposal.</p>
+<p>Same chips in both cards: a low R1 / middle G2 / low D1 stack, an upper N3 R1 pair, a held S,
+and a long stack with a low R1 inside. Watch where the dot sits relative to the letter vs the small digit.</p>
 
-<div class="card"><h2>Now — no octave dots</h2><div class="strip" id="now"></div></div>
-<div class="card"><h2>Proposal — dots, same compact design</h2><div class="strip DOT" id="dot"></div></div>
+<div class="card"><h2>Now — dot centers over letter+digit</h2><div class="strip NOW" id="now"></div></div>
+<div class="card"><h2>Fix — dot centers on the letter only</h2><div class="strip FIX" id="fix"></div></div>
 
 <script>
+/* notes: [letter, variant|null, oct]  oct: -1 low, 0 mid, 1 up; "hold" = comma */
 const CHIPS = [
-  '<span class="st oct-dn">R<sub>1</sub></span><span class="st">,</span><span class="st">N<sub>3</sub></span><span class="st">D<sub>1</sub></span>|1 beat|',
-  '<span class="st oct-up">N<sub>3</sub></span><span class="st oct-up">R<sub>1</sub></span><span class="st oct-up">N<sub>3</sub></span><span class="st oct-up">R<sub>1</sub></span>|1 beat|',
-  '<span class="st">S</span><span class="st">,</span><span class="st">,</span><span class="st">,</span>|1 beat|',
-  '<span>–</span>|¼ beat|gapc',
-  '<span class="st">S</span><span class="st">R<sub>1</sub></span><span class="st">G<sub>2</sub></span><span class="st oct-dn">R<sub>1</sub></span><span class="st">G<sub>2</sub></span><span class="st">,</span><span class="st">,</span><span class="st">,</span>|2 beats|',
-  '<span class="st oct-up">D<sub>1</sub></span><span class="st">,</span><span class="st">,</span><span class="st">,</span>|1 beat|',
+  { notes: [["R",1,-1],["G",2,0],["D",1,-1]], dur: "1 beat" },
+  { notes: [["N",3,1],["R",1,1],["N",3,1],["R",1,1]], dur: "1 beat" },
+  { notes: [["S",null,0],"hold","hold","hold"], dur: "1 beat" },
+  { notes: [["S",null,0],["R",1,0],["G",2,0],["R",1,-1],["G",2,0],"hold","hold","hold"], dur: "2 beats" },
+  { notes: [["D",1,1],"hold",["M",2,0],["G",2,0]], dur: "1 beat" },
 ];
-const html = CHIPS.map(c => {
-  const [label, dur, cls] = c.split("|");
-  return `<div class="fchip ${cls || ""}">${label}<span class="dur">${dur}</span></div>`;
+const octCls = o => o > 0 ? " oct-up" : o < 0 ? " oct-dn" : "";
+const nowHTML = CHIPS.map(c => {
+  const label = c.notes.map(n => n === "hold"
+    ? '<span class="st">,</span>'
+    : `<span class="st${octCls(n[2])}">${n[0]}${n[1] ? `<sub>${n[1]}</sub>` : ""}</span>`).join("");
+  return `<div class="fchip">${label}<span class="dur">${c.dur}</span></div>`;
 }).join("");
-document.getElementById("now").innerHTML = html;
-document.getElementById("dot").innerHTML = html;
+const fixHTML = CHIPS.map(c => {
+  const label = c.notes.map(n => n === "hold"
+    ? '<span class="st"><span class="lt">,</span></span>'
+    : `<span class="st"><span class="lt${octCls(n[2])}">${n[0]}</span>${n[1] ? `<sub>${n[1]}</sub>` : ""}</span>`).join("");
+  return `<div class="fchip">${label}<span class="dur">${c.dur}</span></div>`;
+}).join("");
+document.getElementById("now").innerHTML = nowHTML;
+document.getElementById("fix").innerHTML = fixHTML;
 </script>
 </body>
 </html>
