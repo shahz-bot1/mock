@@ -98,10 +98,12 @@ Adi tala only for now.
       class overrode it — both views ended up hidden. Now toggles the class;
       test-compose asserts effective visibility (33 assertions);
       build 2026.10.12-2.
-- [x] Insert before/after (2026-10-12, user request): chip edit sheet gains a
-      "＋ insert before / insert after ＋" row (picker `insert` option); opens
-      the new-chip sheet and splices at i / i+1. Wired in Compose + P3;
-      build 2026.10.12-3.
+- [x] Insert before/after (2026-10-12, user request): chip edit sheet gains
+      insert actions (picker `insert` option); opens the new-chip sheet and
+      splices at i / i+1. Wired in Compose + P3; build 2026.10.12-3. Moved
+      2026-10-13 (user request): a ＋ button at the sheet's top-right opens a
+      popover with "Insert before" / "Insert after" (the two-button row is
+      gone); build 2026.10.13-3.
 - [x] Crossfaded sustain loop (2026-10-13, user-reported + approved): a long
       hold changed character ~5 beats in — the hard buffer loop jumped from
       the sample tail back to 0.5s. playNote now loops the sustain as a chain
