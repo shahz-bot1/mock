@@ -120,11 +120,6 @@ input[type=range] { width: 130px; accent-color: var(--accent); }
 .fchip.cur { outline: 2px solid var(--warn); }
 .fchip .dur { display: block; font-size: 10px; color: var(--muted); font-weight: 400; margin-top: 2px; }
 .fchip sub { font-size: 10px; color: var(--muted); }
-.fchip .st { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.05; }
-.fchip .st::before { content: ""; display: block; height: 9px; font-size: 11px; line-height: 9px; color: var(--accent); }
-.fchip .st::after { content: ""; display: block; height: 9px; font-size: 13px; line-height: 9px; color: var(--accent); }
-.fchip .st.oct-up::before { content: "˙"; }
-.fchip .st.oct-dn::after { content: "."; }
 .fchip.addc { border-style: dashed; border-color: var(--accent); color: var(--accent);
   font-size: 24px; min-width: 56px; display: flex; align-items: center; justify-content: center; }
 
