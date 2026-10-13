@@ -68,6 +68,16 @@ input[type=range] { width: 130px; accent-color: var(--accent); }
   display: none; max-height: 72vh; overflow-y: auto; }
 .sheet.on { display: block; }
 .sheet h3 { margin: 0 0 10px; font-size: 15px; }
+.phead { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.pinsbtn { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--panel2); color: var(--accent); font-size: 20px; line-height: 1; margin-top: -5px; padding: 0; }
+.pinsmenu { position: absolute; top: 36px; right: 0; z-index: 5; background: var(--panel2);
+  border: 1px solid var(--border); border-radius: 12px; padding: 6px; min-width: 172px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.pinsmenu[hidden] { display: none; }
+.pinsmenu button { display: block; width: 100%; text-align: left; background: transparent; border: none;
+  color: var(--text); font-size: 15px; padding: 10px 12px; border-radius: 8px; }
+.pinsmenu button:active { background: var(--accent-soft); }
 .pgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .pbtn { background: var(--panel2); border: 1px solid var(--border); color: var(--text);
   border-radius: 12px; padding: 12px 4px; font-size: 17px; font-weight: 700; }
