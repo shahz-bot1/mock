@@ -117,6 +117,14 @@ Adi tala only for now.
       dipped and returned (user-reported same day). Replaced with equal-power
       sine/cosine curves (fadeIn² + fadeOut² = 1, 0.8s fades); the test now
       asserts the COMBINED crossfade power stays ~1; build 2026.10.13-2.
+- [x] Raw JSON edit mode (2026-10-13, user request — placement brainstormed,
+      he picked option 1): "{ } JSON" toggle beside Export swaps Setup +
+      Phrase cards for a monospace editor showing the composition (name/
+      ragaId/saOffset/tempo/loop/chips, one chip per line for section
+      copy/paste) with Apply / Copy all / Cancel. Apply parses and runs the
+      SAME sanitizer as Import (envelope pastes also accepted); invalid input
+      alerts and stays in raw mode, nothing saved. test-compose 53
+      assertions; build 2026.10.13-5.
 - [ ] Deep-research handoff (carnatic-composition-notation) — when it arrives,
       fold notation findings into P2 + note here; re-push if changed.
 
