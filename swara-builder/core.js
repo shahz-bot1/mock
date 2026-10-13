@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.13-2";
+  const BUILD_VERSION = "2026.10.13-3";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -297,7 +297,8 @@ const SB = (() => {
   /**
    * opts: {title, ragaId|null (null=chromatic), oct (default), showSpecials:true,
    *        stackMode:bool (shows the Stack toggle, off by default),
-   *        insert:bool + onInsert(where) (edit sheets: "insert before/after" row),
+   *        insert:bool + onInsert(where) (edit sheets: ＋ button at the sheet's
+   *        top-right opens a popover with "Insert before" / "Insert after"),
    *        prefill:[{st,oct}|{hold:true}] (initial stack selection, e.g. current
    *          value in edit mode),
    *        current: html shown under the title (e.g. current value in edit mode),
@@ -321,7 +322,14 @@ const SB = (() => {
       };
       const inSel = st => sel.some(x => !x.hold && x.st === st && x.oct === oct);
       pickerEl.innerHTML =
-        `<h3>${opts.title || "Pick swara"}</h3>` +
+        `<div class="phead"><h3>${opts.title || "Pick swara"}</h3>` +
+        (opts.insert ?
+          `<button class="pinsbtn" aria-label="Insert a chip">＋</button>` +
+          `<div class="pinsmenu" hidden>` +
+            `<button data-ins="before">Insert before</button>` +
+            `<button data-ins="after">Insert after</button>` +
+          `</div>` : "") +
+        `</div>` +
         (opts.current ? `<div class="pkcur">${opts.current}</div>` : "") +
         `<div class="seg" id="pkOct">` +
           `<button data-o="-1" class="${oct===-1?"on":""}">low (˙S)</button>` +
@@ -338,11 +346,6 @@ const SB = (() => {
           `<button class="pbtn" data-sp="gap">– gap</button>` +
           `<button class="pbtn" data-sp="clear">✕ clear</button>`) +
         `</div>`) +
-        (opts.insert ?
-        `<div class="prow">` +
-          `<button class="pbtn" data-ins="before">＋ insert before</button>` +
-          `<button class="pbtn" data-ins="after">insert after ＋</button>` +
-        `</div>` : "") +
         (opts.duration ? `<div class="pkdur"><span>Length</span><div class="seg" id="pkDur">` +
           opts.duration.options.map(x =>
             `<button data-d="${x}" class="${x === durVal ? "on" : ""}">${durLbl(x)}</button>`).join("") +
@@ -385,6 +388,11 @@ const SB = (() => {
         const where = b.dataset.ins;
         closePicker(); if (opts.onInsert) opts.onInsert(where);
       });
+      const insBtn = pickerEl.querySelector(".pinsbtn");
+      if (insBtn) insBtn.onclick = () => {
+        const m = pickerEl.querySelector(".pinsmenu");
+        if (m) m.hidden = !m.hidden;
+      };
       pickerEl.querySelectorAll(".selchip").forEach(b => b.onclick = () => {
         sel.splice(+b.dataset.i, 1); render();
       });
