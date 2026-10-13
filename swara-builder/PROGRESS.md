@@ -105,10 +105,14 @@ Adi tala only for now.
 - [x] Crossfaded sustain loop (2026-10-13, user-reported + approved): a long
       hold changed character ~5 beats in — the hard buffer loop jumped from
       the sample tail back to 0.5s. playNote now loops the sustain as a chain
-      of overlapping segments with 0.6s crossfades (scheduleSample); short
-      notes unchanged. test-longhold.js: 15 assertions; stack-hold/repro/P3
-      playback suites still verified with identical timings;
-      build 2026.10.13-1.
+      of overlapping segments with crossfades (scheduleSample); short
+      notes unchanged. test-longhold.js covers the scheduling; stack-hold/
+      repro/P3 playback suites still verified with identical timings;
+      build 2026.10.13-1. First attempt used exponential fade ramps — the pair
+      collapses to ~0.02 combined at the crossfade centre, so the note audibly
+      dipped and returned (user-reported same day). Replaced with equal-power
+      sine/cosine curves (fadeIn² + fadeOut² = 1, 0.8s fades); the test now
+      asserts the COMBINED crossfade power stays ~1; build 2026.10.13-2.
 - [ ] Deep-research handoff (carnatic-composition-notation) — when it arrives,
       fold notation findings into P2 + note here; re-push if changed.
 
