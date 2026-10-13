@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.13-3";
+  const BUILD_VERSION = "2026.10.13-4";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -289,6 +289,17 @@ const SB = (() => {
     document.body.appendChild(veilEl);
     document.body.appendChild(pickerEl);
     veilEl.onclick = closePicker;
+    // Insert popover: a tap anywhere else in the sheet dismisses it (and is
+    // swallowed, so it doesn't also trigger the control underneath).
+    pickerEl.addEventListener("click", e => {
+      const m = pickerEl.querySelector(".pinsmenu");
+      if (!m || m.hidden) return;
+      const b = pickerEl.querySelector(".pinsbtn");
+      if (e.target === b || m.contains(e.target)) return;
+      m.hidden = true;
+      e.stopPropagation();
+      e.preventDefault();
+    }, true);
   }
   function closePicker() {
     if (pickerEl) pickerEl.classList.remove("on");
