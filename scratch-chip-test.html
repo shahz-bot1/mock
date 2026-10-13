@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chip layout test</title>
+<style>
+:root { --bg:#101318; --panel:#171c24; --panel2:#1f2631; --text:#e8ecf2; --muted:#9aa4b2;
+  --border:#2a323e; --accent:#5b9dff; --accent-soft:rgba(91,157,255,.16); --warn:#fbbf24; }
+body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,"SF Pro Text",sans-serif; padding:16px; }
+h2 { font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; }
+.card { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:16px; }
+.strip { display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; }
+.fchip { background:var(--panel2); border:1.5px solid var(--accent); border-radius:12px;
+  padding:10px 12px; font-size:16px; font-weight:700; min-width:56px; text-align:center; }
+.fchip .dur { display:block; font-size:10px; color:var(--muted); font-weight:400; margin-top:2px; }
+.fchip sub { font-size:10px; color:var(--muted); }
+
+/* A: current shipped CSS (control) */
+.A .st { line-height:1.05; font-size:13px; }
+.A .st sub { font-size:9px; color:var(--muted); }
+.A .oct-up::after { content:"˙"; display:block; font-size:10px; line-height:1; color:var(--accent); }
+.A .oct-dn::before { content:"."; display:block; font-size:12px; line-height:1; color:var(--accent); }
+
+/* B: inline-block .st, same pseudo assignment as A */
+.B { gap:6px; }
+.B .fchip { padding:7px 9px; font-size:15px; min-width:44px; border-radius:10px; }
+.B .st { display:inline-block; text-align:center; vertical-align:middle; line-height:1.05; }
+.B .st sub { font-size:9px; color:var(--muted); }
+.B .oct-up::after { content:"˙"; display:block; font-size:10px; line-height:1; color:var(--accent); }
+.B .oct-dn::before { content:"."; display:block; font-size:12px; line-height:1; color:var(--accent); }
+
+/* C: inline-flex column .st, swapped pseudos (up dot via ::before, down via ::after) */
+.C { gap:6px; }
+.C .fchip { padding:7px 9px; font-size:15px; min-width:44px; border-radius:10px; }
+.C .st { display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.05; }
+.C .st sub { font-size:9px; color:var(--muted); }
+.C .oct-up::before { content:"˙"; font-size:10px; line-height:1; color:var(--accent); }
+.C .oct-dn::after { content:"."; font-size:12px; line-height:1; color:var(--accent); }
+</style>
+</head>
+<body>
+<p>Test stack: <b>R1 (upper octave)</b>, <b>G2 (middle)</b>, <b>D1 (lower octave)</b> in one chip.
+Correct = dot ABOVE R1, no dot on G2, dot BELOW D1. Second chip: a single middle S. Third: single upper S.</p>
+
+<div class="card"><h2>A — current</h2><div class="strip A">
+  <div class="fchip"><span class="st oct-up">R<sub>1</sub></span><span class="st">G<sub>2</sub></span><span class="st oct-dn">D<sub>1</sub></span><span class="dur">1 beat</span></div>
+  <div class="fchip"><span class="st">S</span><span class="dur">1 beat</span></div>
+  <div class="fchip"><span class="st oct-up">S</span><span class="dur">2 beats</span></div>
+</div></div>
+
+<div class="card"><h2>B — inline-block</h2><div class="strip B">
+  <div class="fchip"><span class="st oct-up">R<sub>1</sub></span><span class="st">G<sub>2</sub></span><span class="st oct-dn">D<sub>1</sub></span><span class="dur">1 beat</span></div>
+  <div class="fchip"><span class="st">S</span><span class="dur">1 beat</span></div>
+  <div class="fchip"><span class="st oct-up">S</span><span class="dur">2 beats</span></div>
+</div></div>
+
+<div class="card"><h2>C — inline-flex, swapped</h2><div class="strip C">
+  <div class="fchip"><span class="st oct-up">R<sub>1</sub></span><span class="st">G<sub>2</sub></span><span class="st oct-dn">D<sub>1</sub></span><span class="dur">1 beat</span></div>
+  <div class="fchip"><span class="st">S</span><span class="dur">1 beat</span></div>
+  <div class="fchip"><span class="st oct-up">S</span><span class="dur">2 beats</span></div>
+</div></div>
+</body>
+</html>
