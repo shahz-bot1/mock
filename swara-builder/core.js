@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.13-5";
+  const BUILD_VERSION = "2026.10.13-6";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -33,10 +33,12 @@ const SB = (() => {
       aro:["S","R1","G2","M2","P","D1","N3"], ava:["S","N3","D1","P","M2","G2","R1"] },
   ]; // Aananda Bhairavi arohana/avarohana per srgm.info Geeta #11 (research 2026-10-11)
   const ragaById = id => RAGAS.find(r => r.id === id) || null;
-  /* picker order: arohana order (dedup); full pitch set = union of aro+ava */
+  /* picker order: arohana order (dedup), then avarohana-only sthanas;
+     full pitch set = union of aro+ava */
   const ragaPickerList = raga => {
     const seen = new Set(), out = [];
     raga.aro.forEach(s => { if (!seen.has(s)) { seen.add(s); out.push(s); } });
+    raga.ava.forEach(s => { if (!seen.has(s)) { seen.add(s); out.push(s); } });
     return out;
   };
 
