@@ -125,6 +125,19 @@ Adi tala only for now.
       SAME sanitizer as Import (envelope pastes also accepted); invalid input
       alerts and stays in raw mode, nothing saved. test-compose 53
       assertions; build 2026.10.13-5.
+- [x] PORTED TO RAGAMENTOR (2026-10-13, user go-ahead): Compose Studio is the
+      fifth studio, live at shahz-bot1.github.io/RagaMentor/compose/ with a
+      home-launcher card. Built on the shared architecture: shared/studio.css,
+      StudioTheme (shared slowloop-theme key), StudioUI.tempoSlider,
+      StudioAudio — extended additively with playSampledSustain (the
+      crossfaded sustain chain) in shared/audio.js; samples from
+      raga/samples/harmonium/. Same localStorage key (compose-studio-v1,
+      same origin) so preview compositions carry over. Tests:
+      ios-slowdown-app/tests/compose-test.js (47) + sustain-test.js (14);
+      PLAN.md synced. Noted during port (NOT changed — faithful to the
+      validated preview): ragaPickerList offers arohana sthanas only, though
+      its comment says aro+ava union (e.g. Bhairavi's ava-only D1 isn't in
+      the picker) — user decision needed before changing.
 - [ ] Deep-research handoff (carnatic-composition-notation) — when it arrives,
       fold notation findings into P2 + note here; re-push if changed.
 
