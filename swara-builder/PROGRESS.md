@@ -154,3 +154,5 @@ Adi tala only for now.
 3. If research handoff arrived, update P2, bump BUILD_VERSION in core.js,
    re-run tests, re-push, verify live.
 4. Morning: deliver summary of findings + recommendation to user.
+
+- 2026-10-13 (build 2026.10.13-7): chips now show octave dots without losing the compact one-line layout — each swara is an inline-flex column with reserved 9px dot slots above/below (user-approved from a rendered mockup). Same CSS shipped in RagaMentor Compose Studio. Picker list is the aro+ava union (build -6).
