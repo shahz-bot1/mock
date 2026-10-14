@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Compose Studio — Swara Builder</title>
-<link rel="stylesheet" href="../swara-builder/core.css?v=2026.10.14-1">
+<link rel="stylesheet" href="../swara-builder/core.css?v=2026.10.14-2">
 <style>
   .crow { display: flex; align-items: center; gap: 12px; background: var(--panel);
           border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
@@ -70,6 +70,7 @@
       <button class="btn ghost" id="rawBtn">{ } JSON</button>
       <button class="btn danger" id="deleteBtn">Delete</button>
     </div>
+    <p class="note" style="margin:0 0 4px"><a href="#" id="ragaPickLink">Choose in RagaBrowser ›</a> — all 72 melakartas, janyas &amp; more</p>
     <p class="note">Tap a chip to edit it, or ＋ to append. Total beats: <b id="totBeats">0</b>.</p>
   </div>
   <div class="card" id="phraseCard">
@@ -89,7 +90,7 @@
   </div>
 </div>
 
-<script src="../swara-builder/core.js?v=2026.10.14-1"></script>
+<script src="../swara-builder/core.js?v=2026.10.14-2"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -489,6 +490,24 @@ function render() {
 function showList() { stopPlayback(); setRawMode(false); view = "list"; openId = null; render(); }
 function openEditor(id) { stopPlayback(); setRawMode(false); view = "editor"; openId = id; render(); }
 
+
+document.getElementById("ragaPickLink").onclick = e => {
+  e.preventDefault();
+  const c = cur(); if (!c) return;
+  try { localStorage.setItem("raga-resume-v1", JSON.stringify({ app: "compose", id: c.id, ts: Date.now() })); } catch (err) {}
+  location.href = "../raga-pick/?pick=1&return=" + encodeURIComponent(location.href.split("#")[0]);
+};
+(function resumeRagaPick() {
+  const pick = SB.consumeRagaPick();
+  let resume = null;
+  try { resume = JSON.parse(localStorage.getItem("raga-resume-v1") || "null"); } catch (e) {}
+  if (resume) { try { localStorage.removeItem("raga-resume-v1"); } catch (e) {} }
+  if (!pick || !resume || resume.app !== "compose") return;
+  const c = byId(resume.id); if (!c) return;
+  c.ragaId = SB.registerPickedRaga(pick);
+  touch(c);
+  openEditor(c.id);
+})();
 document.body.appendChild(SB.footer());
 render();
 </script>
