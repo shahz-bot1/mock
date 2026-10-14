@@ -168,3 +168,5 @@ Adi tala only for now.
 - 2026-10-14: picker stack confirm is now a proper Done button (was ✅) — mock core build 2026.10.14-1, synced with the shipped LoopLab + Compose fix.
 
 - 2026-10-14: RagaBrowser pick link (design mock): raga-pick/ page carries the real RagaBrowser library (87 ragas) with a pick mode; composers link out via "Choose in RagaBrowser" and auto-resume with the pick applied. Picks match the built-in table by scale signature (Dheerasankarabharanam = Shankarabharanam) else save to a personal registry ("Your ragas", rb- ids) in localStorage. Mock core build 2026.10.14-2.
+
+- 2026-10-14: raga dropdown reworked per user: groups are Recents (last 5 set, MRU) then Favourites (RagaBrowser stars + adopted picks, mirrored into the registry), then the built-in 10, and the last option is "Select from RagaBrowser..." (replaces the separate link). Picker page gained star toggles writing the real raga-favs key + registry mirror. Mock core build 2026.10.14-4.
