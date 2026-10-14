@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.14-4";
+  const BUILD_VERSION = "2026.10.14-5";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -529,11 +529,25 @@ const SB = (() => {
   function ragaSelect(currentId, onChange, onBrowse) {
     const sel = document.createElement("select");
     const opt = r => `<option value="${r.id}"${r.id===currentId?" selected":""}>${r.name}</option>`;
-    sel.innerHTML = `<option value="">Chromatic (no raga)</option>` +
-      (recentRagas().length ? `<optgroup label="Recents">` + recentRagas().map(opt).join("") + `</optgroup>` : "") +
-      (extraRagas().length ? `<optgroup label="Favourites">` + extraRagas().map(opt).join("") + `</optgroup>` : "") +
-      RAGAS.map(opt).join("") +
-      (onBrowse ? `<option value="__browse__">Select from RagaBrowser…</option>` : "");
+    if (!onBrowse) {
+      /* surfaces with no RagaBrowser trip (playground prototypes) keep the built-in list */
+      sel.innerHTML = `<option value="">Chromatic (no raga)</option>` + RAGAS.map(opt).join("");
+    } else {
+      /* composers: Recents, Favourites, RagaBrowser — deduped, first group wins;
+         the current raga always appears (it leads Recents if it is in neither group) */
+      const recents = recentRagas();
+      const seen = new Set(recents.map(r => r.id));
+      const favs = extraRagas().filter(r => !seen.has(r.id));
+      let recentsHtml = recents.map(opt).join("");
+      if (currentId && !seen.has(currentId) && !favs.some(r => r.id === currentId)) {
+        const cur = ragaById(currentId);
+        if (cur) recentsHtml = opt(cur) + recentsHtml;
+      }
+      sel.innerHTML = `<option value="">Chromatic (no raga)</option>` +
+        (recentsHtml ? `<optgroup label="Recents">` + recentsHtml + `</optgroup>` : "") +
+        (favs.length ? `<optgroup label="Favourites">` + favs.map(opt).join("") + `</optgroup>` : "") +
+        `<option value="__browse__">RagaBrowser ›</option>`;
+    }
     sel.onchange = () => {
       if (sel.value === "__browse__" && onBrowse) { sel.value = currentId || ""; onBrowse(); return; }
       noteRagaUsed(sel.value || null);
