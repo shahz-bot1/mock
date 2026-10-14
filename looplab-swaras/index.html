@@ -41,7 +41,8 @@
   .spseg button { background: var(--panel2); color: var(--muted); border: 0; padding: 8px 12px; font-size: 13px; cursor: pointer; }
   .spseg button.on { background: var(--accent); color: #fff; }
   .sechead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  #secStrip .fchip { cursor: default; }
+  [data-role="strip"] .fchip { cursor: default; }
+  .loopsub { font-size: 12.5px; color: var(--muted); margin: 0 0 8px; }
   .edtitle { font-weight: 700; font-size: 16px; }
 </style>
 </head>
@@ -63,35 +64,18 @@
       <button class="btn" id="loopPlay">▶ Play loop</button>
       <span class="spseg" id="speedSeg"><button data-sp="0.5">0.5×</button><button data-sp="0.75">0.75×</button><button data-sp="1" class="on">1×</button></span>
     </div>
-    <p class="note">Demo screen — waveform and loop audio are illustrative. The Swaras section below is the design under review.</p>
+    <p class="note">Demo screen — waveform and loop audio are illustrative. The Swaras sections below are the design under review.</p>
   </div>
 
-  <div class="card" id="swaraCard">
-    <div class="sechead">
-      <h2 style="margin:0">Swaras</h2>
-      <span>
-        <button class="btn ghost" id="secAdd">＋ Add swaras</button>
-        <button class="btn ghost hidden" id="secEdit">✎ Edit</button>
-      </span>
-    </div>
-    <p class="note" id="secEmpty">No swaras for this loop yet. Tap ＋ Add swaras to compose the phrase you hear in this loop.</p>
-    <div id="secBody" class="hidden">
-      <div class="strip" id="secStrip"></div>
-      <div class="controls" style="margin-top:12px">
-        <button class="btn" id="secPlay">▶ Play</button>
-        <label class="f">Beat <span><input type="range" id="secTempo" min="30" max="120"> <b id="secTempoV"></b> bpm</span></label>
-      </div>
-      <p class="note" id="secMeta"></p>
-    </div>
-  </div>
-  <p class="note">This phrase is stored with the loop only — it never appears in Compose Studio. <a href="#" id="resetDemo">Reset demo</a></p>
+  <div id="loopBlocks"></div>
+  <p class="note">Each phrase is stored with its own loop only — it never appears in Compose Studio. <a href="#" id="resetDemo">Reset demo</a></p>
 </div>
 
 <!-- EDITOR VIEW -->
 <div id="editorView" class="hidden">
   <div class="edbar">
     <a class="back" href="#" id="backBtn">‹ Loop</a>
-    <span class="edtitle">Compose swaras · Pallavi — line 1</span><input class="titlein" id="compName" type="text" placeholder="Composition name" style="display:none">
+    <span class="edtitle" id="edTitle">Compose swaras</span><input class="titlein" id="compName" type="text" placeholder="Composition name" style="display:none">
   </div>
   <div class="card" id="setupCard">
     <h2>Setup</h2>
@@ -144,9 +128,14 @@ const store = {
   save() { SB.save(LS_KEY, this.data); }
 };
 const comps = () => store.data.compositions;
-if (!store.data.seeded) {
+const LOOP_DEFS = [
+  { id: "l1", name: "Pallavi — line 1", a: "0:32.0", b: "0:47.5" },
+  { id: "l2", name: "Pallavi — line 2", a: "0:47.5", b: "1:02.0" }
+];
+comps().forEach(c => { if (!c.loopId) c.loopId = "l1"; });
+if (!comps().length) {
   const now = Date.now();
-  comps().push({ id: uid(), name: "Pallavi — line 1", ragaId: "mohanam", saOffset: 0,
+  comps().push({ id: uid(), name: "Pallavi — line 1", loopId: "l1", ragaId: "mohanam", saOffset: 0,
     tempo: 72, loop: false, createdAt: now, updatedAt: now,
     chips: [
       { k: "note", stack: [{ st: "S", oct: 0 }], beats: 1 },
@@ -160,9 +149,8 @@ if (!store.data.seeded) {
       { k: "note", stack: [{ st: "R2", oct: 0 }], beats: 1 },
       { k: "note", stack: [{ st: "S", oct: 0 }], beats: 2 }
     ] });
-  store.data.seeded = true;
-  store.save();
 }
+store.save();
 const byId = id => comps().find(c => c.id === id) || null;
 
 let view = "list", openId = null;
@@ -286,7 +274,7 @@ function togglePlay(c, onChip) {
   else startPlayback(c, onChip);
 }
 function restartIfPlaying() {
-  const c = cur() || phrase();
+  const c = cur();
   if (pb && c && pb.comp.id === c.id) startPlayback(c, highlightChip);
 }
 function refreshPlayButtons() {
@@ -301,21 +289,24 @@ function refreshPlayButtons() {
     ep.textContent = active ? "⏹ Stop" : "▶ Play";
     ep.classList.toggle("playing", active);
   }
-  const sp = document.getElementById("secPlay");
-  if (sp) {
-    const pc = phrase();
+  LOOP_DEFS.forEach(d => {
+    const blk = blockEl(d.id); if (!blk) return;
+    const btn = blk.querySelector('[data-act="play"]'); if (!btn) return;
+    const pc = phraseFor(d.id);
     const active = !!pb && !!pc && pb.comp.id === pc.id;
-    sp.textContent = active ? "⏹ Stop" : "▶ Play";
-    sp.classList.toggle("playing", active);
-  }
+    btn.textContent = active ? "⏹ Stop" : "▶ Play";
+    btn.classList.toggle("playing", active);
+  });
 }
-const secHighlight = i => {
-  document.querySelectorAll("#secStrip .fchip.cur").forEach(x => x.classList.remove("cur"));
+function phraseFor(loopId) { return comps().find(c => c.loopId === loopId) || null; }
+function blockEl(loopId) { return document.querySelector(`[data-swblock="${loopId}"]`); }
+const highlightIn = loopId => i => {
+  const blk = blockEl(loopId); if (!blk) return;
+  const host = blk.querySelector('[data-role="strip"]'); if (!host) return;
+  [...host.children].forEach(x => x.classList.remove("cur"));
   if (i < 0 || view !== "list") return;
-  const host = document.getElementById("secStrip");
-  if (host && host.children[i]) host.children[i].classList.add("cur");
+  if (host.children[i]) host.children[i].classList.add("cur");
 };
-function phrase() { return comps()[0] || null; }
 const highlightChip = i => {
   document.querySelectorAll(".fchip.cur").forEach(x => x.classList.remove("cur"));
   if (i < 0 || view !== "editor") return;
@@ -324,16 +315,18 @@ const highlightChip = i => {
 };
 
 /* ---------- list view ---------- */
-function renderList() { renderSection(); refreshPlayButtons(); }
-function renderSection() {
-  const c = phrase();
+function renderList() { LOOP_DEFS.forEach(d => renderSection(d.id)); refreshPlayButtons(); }
+function renderSection(loopId) {
+  const blk = blockEl(loopId); if (!blk) return;
+  const c = phraseFor(loopId);
   const has = !!c && c.chips.length > 0;
-  document.getElementById("secEmpty").style.display = has ? "none" : "";
-  document.getElementById("secBody").classList.toggle("hidden", !has);
-  document.getElementById("secAdd").classList.toggle("hidden", has);
-  document.getElementById("secEdit").classList.toggle("hidden", !has);
+  const q = sel => blk.querySelector(sel);
+  q('[data-role="empty"]').style.display = has ? "none" : "";
+  q('[data-role="body"]').classList.toggle("hidden", !has);
+  q('[data-act="add"]').classList.toggle("hidden", has);
+  q('[data-act="edit"]').classList.toggle("hidden", !has);
   if (!has) return;
-  const host = document.getElementById("secStrip");
+  const host = q('[data-role="strip"]');
   host.innerHTML = "";
   c.chips.forEach(ch => {
     const el = document.createElement("div");
@@ -341,32 +334,89 @@ function renderSection() {
     el.innerHTML = chipLabel(ch) + `<span class="dur">${durLabel(ch.beats)}</span>`;
     host.appendChild(el);
   });
-  document.getElementById("secTempo").value = c.tempo;
-  document.getElementById("secTempoV").textContent = c.tempo;
-  document.getElementById("secMeta").textContent =
+  q('[data-role="tempo"]').value = c.tempo;
+  q('[data-role="tempoV"]').textContent = c.tempo;
+  q('[data-role="meta"]').textContent =
     `${ragaName(c.ragaId)} · ${fmtBeats(totBeats(c))} beats · read-only — tap Edit to change the swaras`;
 }
-document.getElementById("secAdd").onclick = () => {
-  let c = phrase();
-  if (!c) {
-    const now = Date.now();
-    c = { id: uid(), name: "Pallavi — line 1", ragaId: "mohanam", saOffset: 0,
-          tempo: 72, loop: false, chips: [], createdAt: now, updatedAt: now };
-    comps().push(c); store.save();
-  }
-  openEditor(c.id);
-};
-document.getElementById("secEdit").onclick = () => { const c = phrase(); if (c) openEditor(c.id); };
-document.getElementById("secPlay").onclick = () => {
-  const c = phrase(); if (!c || !c.chips.length) return;
-  togglePlay(c, secHighlight);
-};
-document.getElementById("secTempo").oninput = e => {
-  const c = phrase(); if (!c) return;
-  c.tempo = +e.target.value;
-  document.getElementById("secTempoV").textContent = c.tempo;
-  touch(c); restartIfPlaying();
-};
+function buildBlocks() {
+  const host = document.getElementById("loopBlocks");
+  LOOP_DEFS.forEach(d => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.swblock = d.id;
+    const head = document.createElement("div");
+    head.className = "sechead";
+    const h = document.createElement("h2");
+    h.style.margin = "0";
+    h.textContent = "Swaras";
+    const btns = document.createElement("span");
+    const add = document.createElement("button");
+    add.className = "btn ghost"; add.dataset.act = "add"; add.textContent = "＋ Add swaras";
+    const edit = document.createElement("button");
+    edit.className = "btn ghost hidden"; edit.dataset.act = "edit"; edit.textContent = "✎ Edit";
+    btns.appendChild(add); btns.appendChild(edit);
+    head.appendChild(h); head.appendChild(btns);
+    card.appendChild(head);
+    const sub = document.createElement("p");
+    sub.className = "loopsub";
+    sub.textContent = `${d.name} · A ${d.a} – B ${d.b}`;
+    card.appendChild(sub);
+    const empty = document.createElement("p");
+    empty.className = "note"; empty.dataset.role = "empty";
+    empty.textContent = "No swaras for this loop yet. Tap ＋ Add swaras to compose the phrase you hear in this loop.";
+    card.appendChild(empty);
+    const body = document.createElement("div");
+    body.dataset.role = "body"; body.className = "hidden";
+    const strip = document.createElement("div");
+    strip.className = "strip"; strip.dataset.role = "strip";
+    body.appendChild(strip);
+    const ctrls = document.createElement("div");
+    ctrls.className = "controls"; ctrls.style.marginTop = "12px";
+    const play = document.createElement("button");
+    play.className = "btn"; play.dataset.act = "play"; play.textContent = "▶ Play";
+    const lab = document.createElement("label");
+    lab.className = "f"; lab.textContent = "Beat ";
+    const span = document.createElement("span");
+    const rng = document.createElement("input");
+    rng.type = "range"; rng.min = "30"; rng.max = "120"; rng.dataset.role = "tempo";
+    const bv = document.createElement("b"); bv.dataset.role = "tempoV";
+    span.appendChild(rng); span.appendChild(document.createTextNode(" ")); span.appendChild(bv);
+    span.appendChild(document.createTextNode(" bpm"));
+    lab.appendChild(span);
+    ctrls.appendChild(play); ctrls.appendChild(lab);
+    body.appendChild(ctrls);
+    const meta = document.createElement("p");
+    meta.className = "note"; meta.dataset.role = "meta";
+    body.appendChild(meta);
+    card.appendChild(body);
+    host.appendChild(card);
+
+    add.onclick = () => {
+      let c = phraseFor(d.id);
+      if (!c) {
+        const now = Date.now();
+        c = { id: uid(), name: d.name, loopId: d.id, ragaId: "mohanam", saOffset: 0,
+              tempo: 72, loop: false, chips: [], createdAt: now, updatedAt: now };
+        comps().push(c); store.save();
+      }
+      openEditor(c.id);
+    };
+    edit.onclick = () => { const c = phraseFor(d.id); if (c) openEditor(c.id); };
+    play.onclick = () => {
+      const c = phraseFor(d.id); if (!c || !c.chips.length) return;
+      togglePlay(c, highlightIn(d.id));
+    };
+    rng.oninput = e => {
+      const c = phraseFor(d.id); if (!c) return;
+      c.tempo = +e.target.value;
+      bv.textContent = c.tempo;
+      touch(c);
+      if (pb && pb.comp.id === c.id) startPlayback(c, highlightIn(d.id));
+    };
+  });
+}
+buildBlocks();
 document.getElementById("resetDemo").onclick = e => {
   e.preventDefault();
   try { localStorage.removeItem(LS_KEY); } catch (err) {}
@@ -603,7 +653,12 @@ function render() {
   if (view === "list") renderList(); else renderEditor();
 }
 function showList() { stopPlayback(); setRawMode(false); view = "list"; openId = null; render(); }
-function openEditor(id) { stopPlayback(); setRawMode(false); view = "editor"; openId = id; render(); }
+function openEditor(id) {
+  stopPlayback(); setRawMode(false); view = "editor"; openId = id;
+  const cc = byId(id);
+  if (cc) document.getElementById("edTitle").textContent = "Compose swaras · " + (cc.name || "loop");
+  render();
+}
 
 document.body.appendChild(SB.footer());
 render();
