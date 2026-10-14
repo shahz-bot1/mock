@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.14-1";
+  const BUILD_VERSION = "2026.10.14-2";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -32,7 +32,7 @@ const SB = (() => {
     { id:"shubhapanthuvarali", name:"Shubhapanthuvarali",
       aro:["S","R1","G2","M2","P","D1","N3"], ava:["S","N3","D1","P","M2","G2","R1"] },
   ]; // Aananda Bhairavi arohana/avarohana per srgm.info Geeta #11 (research 2026-10-11)
-  const ragaById = id => RAGAS.find(r => r.id === id) || null;
+  const ragaById = id => RAGAS.find(r => r.id === id) || registryRaga(id) || null;
   /* picker order: arohana order (dedup), then avarohana-only sthanas;
      full pitch set = union of aro+ava */
   const ragaPickerList = raga => {
@@ -41,6 +41,43 @@ const SB = (() => {
     raga.ava.forEach(s => { if (!seen.has(s)) { seen.add(s); out.push(s); } });
     return out;
   };
+
+  /* ---- RagaBrowser pick link: a personal raga registry (localStorage, per origin).
+     A pick made in RagaBrowser lands in "ragabrowser-pick-v1"; the first composer
+     that resumes consumes it, matches it to the built-in table by scale signature
+     (names differ across sources — e.g. Dheerasankarabharanam vs Shankarabharanam),
+     or stores it in "raga-registry-v1" under an rb- id. ---- */
+  const RAGA_PICK_KEY = "ragabrowser-pick-v1";
+  const RAGA_REG_KEY = "raga-registry-v1";
+  const normAro = a => { const x = (a || []).map(v => String(v).replace(/'/g, "")); if (x.length > 1 && x[x.length - 1] === "S") x.pop(); return x; };
+  const normAva = a => { const x = (a || []).map(v => String(v).replace(/'/g, "")); if (x.length > 1 && x[x.length - 1] === "S") x.pop(); return x; };
+  const scaleSig = r => normAro(r.aro).join(" ") + "|" + normAva(r.ava).join(" ");
+  function loadRagaRegistry() { try { return JSON.parse(localStorage.getItem(RAGA_REG_KEY)) || {}; } catch (e) { return {}; } }
+  function registryRaga(id) { const r = loadRagaRegistry()[id]; return r ? { id, name: r.name, aro: r.aro, ava: r.ava } : null; }
+  function registerPickedRaga(pick) {
+    const aro = normAro(pick.aro), ava = normAva(pick.ava);
+    const sig = aro.join(" ") + "|" + ava.join(" ");
+    const hit = RAGAS.find(r => scaleSig(r) === sig) ||
+      RAGAS.find(r => r.name.toLowerCase() === String(pick.name || "").toLowerCase());
+    if (hit) return hit.id;
+    const reg = loadRagaRegistry();
+    const id = "rb-" + String(pick.name || "raga").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    reg[id] = { name: pick.name, aro, ava };
+    try { localStorage.setItem(RAGA_REG_KEY, JSON.stringify(reg)); } catch (e) {}
+    return id;
+  }
+  function extraRagas() {
+    const reg = loadRagaRegistry();
+    return Object.keys(reg).map(id => ({ id, name: reg[id].name, aro: reg[id].aro, ava: reg[id].ava }));
+  }
+  function consumeRagaPick() {
+    let pick = null;
+    try { pick = JSON.parse(localStorage.getItem(RAGA_PICK_KEY) || "null"); } catch (e) {}
+    if (!pick) return null;
+    try { localStorage.removeItem(RAGA_PICK_KEY); } catch (e) {}
+    if (!pick.aro || !pick.ava || Date.now() - (pick.ts || 0) > 10 * 60 * 1000) return null;
+    return pick;
+  }
 
   /* slot model: {k:'empty'} | {k:'note', stack:[{st,oct}]} | {k:'hold'} | {k:'gap'} */
   const emptySlot = () => ({ k:"empty" });
@@ -464,7 +501,10 @@ const SB = (() => {
   function ragaSelect(currentId, onChange) {
     const sel = document.createElement("select");
     sel.innerHTML = `<option value="">Chromatic (no raga)</option>` +
-      RAGAS.map(r => `<option value="${r.id}"${r.id===currentId?" selected":""}>${r.name}</option>`).join("");
+      RAGAS.map(r => `<option value="${r.id}"${r.id===currentId?" selected":""}>${r.name}</option>`).join("") +
+      (extraRagas().length ? `<optgroup label="Your ragas">` +
+        extraRagas().map(r => `<option value="${r.id}"${r.id===currentId?" selected":""}>${r.name}</option>`).join("") +
+        `</optgroup>` : "");
     sel.onchange = () => onChange(sel.value || null);
     return sel;
   }
@@ -481,6 +521,6 @@ const SB = (() => {
     ragaById, ragaPickerList, emptySlot, slotLabelHTML, chipLabelHTML, shortLabel,
     ensureAudio, ensureSamples, playNote, stopAll, playRows, sampleFor, noteSemitone,
     openPicker, closePicker, save, load, applyTheme, themeBtn, footer,
-    ragaSelect, saSelect,
+    ragaSelect, saSelect, registryRaga, registerPickedRaga, extraRagas, consumeRagaPick, loadRagaRegistry,
   };
 })();
