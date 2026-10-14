@@ -166,3 +166,5 @@ Adi tala only for now.
 - 2026-10-14: Swaras section layout decided by user: Option B (round Play in the section header, top right, beside Edit) with a tempo SLIDER row (not the stepper) for consistency with the other studios. Delete swaras lives in the composer with confirm.
 
 - 2026-10-14: picker stack confirm is now a proper Done button (was ✅) — mock core build 2026.10.14-1, synced with the shipped LoopLab + Compose fix.
+
+- 2026-10-14: RagaBrowser pick link (design mock): raga-pick/ page carries the real RagaBrowser library (87 ragas) with a pick mode; composers link out via "Choose in RagaBrowser" and auto-resume with the pick applied. Picks match the built-in table by scale signature (Dheerasankarabharanam = Shankarabharanam) else save to a personal registry ("Your ragas", rb- ids) in localStorage. Mock core build 2026.10.14-2.
