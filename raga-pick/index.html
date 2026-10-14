@@ -28,6 +28,8 @@
   .use { flex:none; background:var(--accent); color:#fff; border:0; border-radius:10px;
     padding:9px 16px; font-size:14px; font-weight:600; cursor:pointer; }
   .use.saved { background:var(--panel2); color:var(--accent); }
+  .star { flex:none; background:none; border:0; font-size:19px; cursor:pointer; color:var(--muted); padding:6px 2px; }
+  .star.fav { color:#f5b301; }
   .foot { text-align:center; font-size:11.5px; color:var(--muted); margin-top:20px; }
   .none { color:var(--muted); font-size:14px; padding:8px 2px; }
 </style>
@@ -35,7 +37,7 @@
 <body>
 <div class="wrap">
   <h1>Raga<span>Browser</span></h1>
-  <p class="sub">Find your raga. Hear every swara.</p>
+  <p class="sub">Find your raga. Hear every swara. ☆ adds a raga to your Favourites — favourites appear in the composers’ raga dropdown.</p>
   <div class="banner" id="pickBanner" hidden>
     🎼 <b>Pick a raga for your composition.</b> Tap <b>Use</b> on a raga and you'll go
     straight back to where you were — the raga is applied there and saved to your ragas.
@@ -47,12 +49,16 @@
   Raga data is the real RagaBrowser library; playback lives in the full RagaBrowser.</p>
 </div>
 <script src="ragas-data.js"></script>
+<script src="../swara-builder/core.js?v=2026.10.14-4"></script>
 <script>
 "use strict";
 try {
   const t = localStorage.getItem("slowloop-theme");
   if (t) document.documentElement.setAttribute("data-theme", t);
 } catch (e) {}
+let favs = new Set();
+try { favs = new Set(JSON.parse(localStorage.getItem("raga-favs") || "[]")); } catch (e) {}
+const saveFavs = () => { try { localStorage.setItem("raga-favs", JSON.stringify([...favs])); } catch (e) {} };
 const params = new URLSearchParams(location.search);
 const pickMode = params.get("pick") === "1";
 const ret = params.get("return") || "";
@@ -90,6 +96,17 @@ function render(filter) {
       const sc = document.createElement("div"); sc.className = "scale";
       sc.textContent = r.aro.join(" ") + "  ·  " + r.ava.join(" ");
       meta.append(b, s2, sc);
+      const star = document.createElement("button");
+      star.className = "star" + (favs.has(r.id) ? " fav" : "");
+      star.textContent = favs.has(r.id) ? "\u2B50" : "\u2606";
+      star.title = "Favourite";
+      star.onclick = () => {
+        if (favs.has(r.id)) { favs.delete(r.id); SB.syncFavourite(r, false); }
+        else { favs.add(r.id); SB.syncFavourite(r, true); }
+        saveFavs();
+        star.classList.toggle("fav", favs.has(r.id));
+        star.textContent = favs.has(r.id) ? "\u2B50" : "\u2606";
+      };
       const btn = document.createElement("button");
       btn.className = "use"; btn.textContent = "Use";
       btn.onclick = () => {
@@ -98,7 +115,7 @@ function render(filter) {
         if (ret) { location.href = ret; return; }
         btn.textContent = "Saved ✓"; btn.classList.add("saved");
       };
-      row.append(meta, btn);
+      row.append(meta, star, btn);
       host.appendChild(row);
     }
   }
