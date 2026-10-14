@@ -164,3 +164,5 @@ Adi tala only for now.
 - 2026-10-14: LoopLab swaras mock v2 — two loops per song, each with its own Swaras section: line 1 filled, line 2 shows the EMPTY state (user asked for it explicitly). Per-loop Add/Edit/Play/tempo; phrases carry a loopId.
 
 - 2026-10-14: Swaras section layout decided by user: Option B (round Play in the section header, top right, beside Edit) with a tempo SLIDER row (not the stepper) for consistency with the other studios. Delete swaras lives in the composer with confirm.
+
+- 2026-10-14: picker stack confirm is now a proper Done button (was ✅) — mock core build 2026.10.14-1, synced with the shipped LoopLab + Compose fix.
