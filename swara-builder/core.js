@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.14-2";
+  const BUILD_VERSION = "2026.10.14-4";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -54,7 +54,7 @@ const SB = (() => {
   const scaleSig = r => normAro(r.aro).join(" ") + "|" + normAva(r.ava).join(" ");
   function loadRagaRegistry() { try { return JSON.parse(localStorage.getItem(RAGA_REG_KEY)) || {}; } catch (e) { return {}; } }
   function registryRaga(id) { const r = loadRagaRegistry()[id]; return r ? { id, name: r.name, aro: r.aro, ava: r.ava } : null; }
-  function registerPickedRaga(pick) {
+  function registerPickedRaga(pick, src) {
     const aro = normAro(pick.aro), ava = normAva(pick.ava);
     const sig = aro.join(" ") + "|" + ava.join(" ");
     const hit = RAGAS.find(r => scaleSig(r) === sig) ||
@@ -62,13 +62,41 @@ const SB = (() => {
     if (hit) return hit.id;
     const reg = loadRagaRegistry();
     const id = "rb-" + String(pick.name || "raga").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    reg[id] = { name: pick.name, aro, ava };
+    if (!reg[id] || src === "pick") reg[id] = { name: pick.name, aro, ava, src: src || "pick" };
     try { localStorage.setItem(RAGA_REG_KEY, JSON.stringify(reg)); } catch (e) {}
     return id;
+  }
+  /* RagaBrowser favourites mirror: starring registers the raga (src "fav");
+     unstarring removes it only while no pick/composition has adopted it. */
+  function syncFavourite(pick, starred) {
+    if (starred) return registerPickedRaga(pick, "fav");
+    const aro = normAro(pick.aro), ava = normAva(pick.ava);
+    const sig = aro.join(" ") + "|" + ava.join(" ");
+    if (RAGAS.find(r => scaleSig(r) === sig)) return null;
+    const reg = loadRagaRegistry();
+    const id = "rb-" + String(pick.name || "raga").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    if (reg[id] && reg[id].src === "fav") {
+      delete reg[id];
+      try { localStorage.setItem(RAGA_REG_KEY, JSON.stringify(reg)); } catch (e) {}
+    }
+    return null;
   }
   function extraRagas() {
     const reg = loadRagaRegistry();
     return Object.keys(reg).map(id => ({ id, name: reg[id].name, aro: reg[id].aro, ava: reg[id].ava }));
+  }
+  const RAGA_RECENTS_KEY = "raga-recents-v1";
+  function noteRagaUsed(id) {
+    if (!id) return;
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem(RAGA_RECENTS_KEY) || "[]"); } catch (e) {}
+    list = [id, ...list.filter(x => x !== id)].slice(0, 5);
+    try { localStorage.setItem(RAGA_RECENTS_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+  function recentRagas() {
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem(RAGA_RECENTS_KEY) || "[]"); } catch (e) {}
+    return list.map(id => ragaById(id)).filter(Boolean);
   }
   function consumeRagaPick() {
     let pick = null;
@@ -498,14 +526,19 @@ const SB = (() => {
     d.innerHTML = `Swara Builder playground · mock repo · build ${BUILD_VERSION}<br>Adi tala only · experimental`;
     return d;
   }
-  function ragaSelect(currentId, onChange) {
+  function ragaSelect(currentId, onChange, onBrowse) {
     const sel = document.createElement("select");
+    const opt = r => `<option value="${r.id}"${r.id===currentId?" selected":""}>${r.name}</option>`;
     sel.innerHTML = `<option value="">Chromatic (no raga)</option>` +
-      RAGAS.map(r => `<option value="${r.id}"${r.id===currentId?" selected":""}>${r.name}</option>`).join("") +
-      (extraRagas().length ? `<optgroup label="Your ragas">` +
-        extraRagas().map(r => `<option value="${r.id}"${r.id===currentId?" selected":""}>${r.name}</option>`).join("") +
-        `</optgroup>` : "");
-    sel.onchange = () => onChange(sel.value || null);
+      (recentRagas().length ? `<optgroup label="Recents">` + recentRagas().map(opt).join("") + `</optgroup>` : "") +
+      (extraRagas().length ? `<optgroup label="Favourites">` + extraRagas().map(opt).join("") + `</optgroup>` : "") +
+      RAGAS.map(opt).join("") +
+      (onBrowse ? `<option value="__browse__">Select from RagaBrowser…</option>` : "");
+    sel.onchange = () => {
+      if (sel.value === "__browse__" && onBrowse) { sel.value = currentId || ""; onBrowse(); return; }
+      noteRagaUsed(sel.value || null);
+      onChange(sel.value || null);
+    };
     return sel;
   }
   function saSelect(saOffset, onChange) {
@@ -521,6 +554,6 @@ const SB = (() => {
     ragaById, ragaPickerList, emptySlot, slotLabelHTML, chipLabelHTML, shortLabel,
     ensureAudio, ensureSamples, playNote, stopAll, playRows, sampleFor, noteSemitone,
     openPicker, closePicker, save, load, applyTheme, themeBtn, footer,
-    ragaSelect, saSelect, registryRaga, registerPickedRaga, extraRagas, consumeRagaPick, loadRagaRegistry,
+    ragaSelect, saSelect, registryRaga, registerPickedRaga, extraRagas, consumeRagaPick, loadRagaRegistry, syncFavourite, noteRagaUsed, recentRagas,
   };
 })();
