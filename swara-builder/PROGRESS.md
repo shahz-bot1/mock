@@ -172,3 +172,5 @@ Adi tala only for now.
 - 2026-10-14: raga dropdown reworked per user: groups are Recents (last 5 set, MRU) then Favourites (RagaBrowser stars + adopted picks, mirrored into the registry), then the built-in 10, and the last option is "Select from RagaBrowser..." (replaces the separate link). Picker page gained star toggles writing the real raga-favs key + registry mirror. Mock core build 2026.10.14-4.
 
 - 2026-10-14: dropdown final shape (user decision): composers show ONLY Recents, Favourites and a "RagaBrowser >" entry (opens the picker) — the built-in 10 no longer appear in composer dropdowns. Groups deduped (first group wins); the current raga always appears (leads Recents if in neither group). Playground prototypes (no picker trip) keep the built-in list. Mock core build 2026.10.14-5.
+
+- 2026-10-14: LoopLab mock: a new loop phrase preselects the last raga selected on that song (store.songRagaId, updated on dropdown change, RagaBrowser pick and raw-JSON apply; falls back to Mohanam). Suite 45 assertions.
