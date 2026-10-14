@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Compose Studio — Swara Builder</title>
-<link rel="stylesheet" href="../swara-builder/core.css?v=2026.10.14-2">
+<link rel="stylesheet" href="../swara-builder/core.css?v=2026.10.14-4">
 <style>
   .crow { display: flex; align-items: center; gap: 12px; background: var(--panel);
           border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
@@ -98,7 +98,6 @@
       <button class="btn ghost" id="rawBtn" style="display:none">{ } JSON</button>
       <button class="btn danger" id="deleteBtn">Delete swaras</button>
     </div>
-    <p class="note" style="margin:0 0 4px"><a href="#" id="ragaPickLink">Choose in RagaBrowser ›</a> — all 72 melakartas, janyas &amp; more</p>
     <p class="note">Tap a chip to edit it, or ＋ to append. Total beats: <b id="totBeats">0</b>.</p>
   </div>
   <div class="card" id="phraseCard">
@@ -118,7 +117,7 @@
   </div>
 </div>
 
-<script src="../swara-builder/core.js?v=2026.10.14-2"></script>
+<script src="../swara-builder/core.js?v=2026.10.14-4"></script>
 <script>
 "use strict";
 SB.applyTheme("sb-theme");
@@ -489,7 +488,10 @@ function renderEditor() {
   if (!c) { showList(); return; }
   document.getElementById("compName").value = c.name || "";
   const rs = document.getElementById("ragaSlot"); rs.innerHTML = "";
-  rs.appendChild(SB.ragaSelect(c.ragaId, v => { c.ragaId = v; touch(c); restartIfPlaying(); }));
+  rs.appendChild(SB.ragaSelect(c.ragaId, v => { c.ragaId = v; touch(c); restartIfPlaying(); }, () => {
+    try { localStorage.setItem("raga-resume-v1", JSON.stringify({ app: "looplab", loopId: c.loopId, ts: Date.now() })); } catch (err) {}
+    location.href = "../raga-pick/?pick=1&return=" + encodeURIComponent(location.href.split("#")[0]);
+  }));
   const ss = document.getElementById("saSlot"); ss.innerHTML = "";
   ss.appendChild(SB.saSelect(c.saOffset, v => { c.saOffset = v; touch(c); restartIfPlaying(); }));
   const t = document.getElementById("tempo");
@@ -664,12 +666,6 @@ function openEditor(id) {
 }
 
 
-document.getElementById("ragaPickLink").onclick = e => {
-  e.preventDefault();
-  const c = cur(); if (!c) return;
-  try { localStorage.setItem("raga-resume-v1", JSON.stringify({ app: "looplab", loopId: c.loopId, ts: Date.now() })); } catch (err) {}
-  location.href = "../raga-pick/?pick=1&return=" + encodeURIComponent(location.href.split("#")[0]);
-};
 (function resumeRagaPick() {
   const pick = SB.consumeRagaPick();
   let resume = null;
@@ -678,6 +674,7 @@ document.getElementById("ragaPickLink").onclick = e => {
   if (!pick || !resume || resume.app !== "looplab") return;
   const c = comps().find(x => x.loopId === resume.loopId); if (!c) return;
   c.ragaId = SB.registerPickedRaga(pick);
+  SB.noteRagaUsed(c.ragaId);
   store.save();
   openEditor(c.id);
 })();
