@@ -162,3 +162,5 @@ Adi tala only for now.
 - 2026-10-14: LoopLab swaras-section design mock (looplab-swaras/): loop-private phrase — Swaras section on the loop screen with Add/Edit, read-only diacritic chips, Play + tempo in the section, composer = the Compose editor forked. Stored under its own key, never in Compose Studio. Awaiting user design feedback.
 
 - 2026-10-14: LoopLab swaras mock v2 — two loops per song, each with its own Swaras section: line 1 filled, line 2 shows the EMPTY state (user asked for it explicitly). Per-loop Add/Edit/Play/tempo; phrases carry a loopId.
+
+- 2026-10-14: Swaras section layout decided by user: Option B (round Play in the section header, top right, beside Edit) with a tempo SLIDER row (not the stepper) for consistency with the other studios. Delete swaras lives in the composer with confirm.
