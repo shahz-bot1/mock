@@ -3,67 +3,94 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Octave marks — three representations</title>
+<title>Swaras section — play/tempo layouts</title>
 <style>
 :root { --bg:#101318; --panel:#171c24; --panel2:#1f2631; --text:#e8ecf2; --muted:#9aa4b2;
   --border:#2a323e; --accent:#5b9dff; --warn:#fbbf24; }
 body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,"SF Pro Text",sans-serif; padding:16px; }
-h2 { font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin:0 0 10px; }
+h2 { font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin:0; }
 p { color:var(--muted); font-size:14px; line-height:1.5; }
-.card { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:16px; }
+.card { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:18px; }
+.sechead { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.loopsub { font-size:12.5px; color:var(--muted); margin:0 0 8px; }
 .strip { display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; }
 .fchip { background:var(--panel2); border:1.5px solid var(--accent); border-radius:12px;
   padding:10px 12px; font-size:16px; font-weight:700; min-width:56px; text-align:center; }
+.fchip.holdc { border-color:var(--border); color:var(--muted); }
 .fchip .dur { display:block; font-size:10px; color:var(--muted); font-weight:400; margin-top:2px; }
 .fchip sub { font-size:10px; color:var(--muted); }
+.meta { font-size:12.5px; color:var(--muted); margin:10px 0 0; }
+.btn { background:var(--accent); color:#fff; border:0; border-radius:10px; padding:11px 18px; font-size:15px; font-weight:600; cursor:pointer; }
+.btn.ghost { background:transparent; color:var(--accent); border:1px solid var(--border); font-weight:500; padding:8px 13px; font-size:13.5px; }
+input[type=range] { accent-color:var(--accent); }
 
-/* SLOT2: reserved dot slots on the swara column; digit absolutely placed at the letter's lower right */
-.SLOT2 .st { display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.05; position:relative; }
-.SLOT2 .st::before { content:""; display:block; height:9px; font-size:11px; line-height:9px; color:var(--accent); }
-.SLOT2 .st::after { content:""; display:block; height:9px; font-size:13px; line-height:9px; color:var(--accent); }
-.SLOT2 .st.oct-up::before { content:"˙"; }
-.SLOT2 .st.oct-dn::after { content:"."; }
-.SLOT2 .st.hs { margin-right:8px; }
-.SLOT2 .st sub { position:absolute; right:-8px; bottom:8px; }
+/* A — stacked: full-width Play, tempo slider row under it */
+.A .playbig { width:100%; margin-top:12px; font-size:16px; padding:13px; }
+.A .temporow { display:flex; align-items:center; gap:10px; margin-top:12px; font-size:13.5px; color:var(--muted); }
+.A .temporow input { flex:1; }
+.A .temporow b { color:var(--text); min-width:52px; text-align:right; }
 
-/* DIA: combining diacritic dot ON the letter glyph; no layout change at all */
-.DIA .st { line-height:1.05; }
+/* B — transport in the header: round Play beside Edit, tempo as a stepper row */
+.B .roundplay { width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; border:0; font-size:16px; cursor:pointer; vertical-align:middle; }
+.B .stepper { display:flex; align-items:center; gap:12px; margin-top:12px; font-size:13.5px; color:var(--muted); }
+.B .stepper .tp { display:inline-flex; align-items:center; gap:2px; border:1px solid var(--border); border-radius:999px; padding:3px; }
+.B .stepper .tp button { width:30px; height:30px; border-radius:50%; border:0; background:var(--panel2); color:var(--text); font-size:16px; cursor:pointer; }
+.B .stepper .tp b { min-width:64px; text-align:center; color:var(--text); font-size:14px; }
+
+/* C — tempo row first, Play as a full-width footer bar */
+.C .temporow { display:flex; align-items:center; gap:10px; margin-top:12px; font-size:13.5px; color:var(--muted); }
+.C .temporow input { flex:1; }
+.C .temporow b { color:var(--text); min-width:52px; text-align:right; }
+.C .footplay { width:100%; margin-top:14px; font-size:16px; padding:13px; }
+.C hr { border:0; border-top:1px solid var(--border); margin:14px 0 0; }
 </style>
 </head>
 <body>
-<p>Same chips in both cards: low R1 / middle G2 / low D1, an upper N3 R1 run, a held S, a long stack
-with a low R1 inside, and an upper D1 with holds. Top = slot design with the digit pinned to the letter's
-lower right. Bottom = the dot as part of the letter glyph itself (combining diacritic, the scholarly print style).</p>
+<p>Three ways to lay out Play + tempo in a filled Swaras section — same chips in each. All stacked, nothing side by side.</p>
 
-<div class="card"><h2>Slot — digit pinned low, dot in reserved slot</h2><div class="strip SLOT2" id="slot"></div></div>
-<div class="card"><h2>Diacritic — dot on the glyph, layout untouched</h2><div class="strip DIA" id="dia"></div></div>
+<div class="card A">
+  <div class="sechead"><h2>Swaras</h2><button class="btn ghost">✎ Edit</button></div>
+  <p class="loopsub">Pallavi — line 1 · A 0:32.0 – B 0:47.5</p>
+  <div class="strip" data-chips></div>
+  <button class="btn playbig">▶ Play</button>
+  <div class="temporow"><span>Tempo</span><input type="range" min="30" max="120" value="72"><b>72 bpm</b></div>
+  <p class="meta">Mohanam · 11 beats · read-only — tap Edit to change the swaras</p>
+  <p class="meta"><b>A — Stacked:</b> Play gets its own full-width row; tempo is a quiet slider row beneath it.</p>
+</div>
+
+<div class="card B">
+  <div class="sechead"><h2>Swaras</h2><span><button class="roundplay">▶</button> <button class="btn ghost">✎ Edit</button></span></div>
+  <p class="loopsub">Pallavi — line 1 · A 0:32.0 – B 0:47.5</p>
+  <div class="strip" data-chips></div>
+  <div class="stepper"><span>Tempo</span><span class="tp"><button>−</button><b>72 bpm</b><button>＋</button></span></div>
+  <p class="meta">Mohanam · 11 beats · read-only — tap Edit to change the swaras</p>
+  <p class="meta"><b>B — Header transport:</b> a round Play sits in the section header next to Edit; tempo becomes a −/+ stepper row. Most compact.</p>
+</div>
+
+<div class="card C">
+  <div class="sechead"><h2>Swaras</h2><button class="btn ghost">✎ Edit</button></div>
+  <p class="loopsub">Pallavi — line 1 · A 0:32.0 – B 0:47.5</p>
+  <div class="strip" data-chips></div>
+  <div class="temporow"><span>Tempo</span><input type="range" min="30" max="120" value="72"><b>72 bpm</b></div>
+  <hr>
+  <button class="btn footplay">▶ Play phrase</button>
+  <p class="meta">Mohanam · 11 beats · read-only — tap Edit to change the swaras</p>
+  <p class="meta"><b>C — Footer play:</b> tempo row under the chips, then Play as a full-width bar closing the section.</p>
+</div>
 
 <script>
-/* notes: [letter, variant|null, oct]  oct: -1 low, 0 mid, 1 up; "hold" = comma */
-const CHIPS = [
-  { notes: [["R",1,-1],["G",2,0],["D",1,-1]], dur: "1 beat" },
-  { notes: [["N",3,1],["R",1,1],["N",3,1],["R",1,1]], dur: "1 beat" },
-  { notes: [["S",null,0],"hold","hold","hold"], dur: "1 beat" },
-  { notes: [["S",null,0],["R",1,0],["G",2,0],["R",1,-1],["G",2,0],"hold","hold","hold"], dur: "2 beats" },
-  { notes: [["D",1,1],"hold",["M",2,0],["G",2,0]], dur: "1 beat" },
-];
-const octCls = o => o > 0 ? " oct-up" : o < 0 ? " oct-dn" : "";
-const slotHTML = CHIPS.map(c => {
-  const label = c.notes.map(n => n === "hold"
-    ? '<span class="st">,</span>'
-    : `<span class="st${octCls(n[2])}${n[1] ? " hs" : ""}">${n[0]}${n[1] ? `<sub>${n[1]}</sub>` : ""}</span>`).join("");
-  return `<div class="fchip">${label}<span class="dur">${c.dur}</span></div>`;
-}).join("");
-const diaHTML = CHIPS.map(c => {
-  const label = c.notes.map(n => {
-    if (n === "hold") return '<span class="st">,</span>';
-    const dot = n[2] > 0 ? "\u0307" : n[2] < 0 ? "\u0323" : "";
-    return `<span class="st">${n[0]}${dot}${n[1] ? `<sub>${n[1]}</sub>` : ""}</span>`;
-  }).join("");
-  return `<div class="fchip">${label}<span class="dur">${c.dur}</span></div>`;
-}).join("");
-document.getElementById("slot").innerHTML = slotHTML;
-document.getElementById("dia").innerHTML = diaHTML;
+const CHIPS =
+  '<div class="fchip">S<span class="dur">1 beat</span></div>' +
+  '<div class="fchip">R<sub>2</sub>G<sub>3</sub><span class="dur">1 beat</span></div>' +
+  '<div class="fchip">P<span class="dur">1 beat</span></div>' +
+  '<div class="fchip holdc">,<span class="dur">1 beat</span></div>' +
+  '<div class="fchip">D<sub>2</sub><span class="dur">1 beat</span></div>' +
+  '<div class="fchip">S&#775;<span class="dur">1 beat</span></div>' +
+  '<div class="fchip">D<sub>2</sub>P<span class="dur">1 beat</span></div>' +
+  '<div class="fchip">G<sub>3</sub><span class="dur">1 beat</span></div>' +
+  '<div class="fchip">R<sub>2</sub><span class="dur">1 beat</span></div>' +
+  '<div class="fchip">S<span class="dur">2 beats</span></div>';
+document.querySelectorAll("[data-chips]").forEach(el => { el.innerHTML = CHIPS; });
 </script>
 </body>
 </html>
