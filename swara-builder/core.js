@@ -1,7 +1,7 @@
 /* Swara Builder playground — shared core (raga data, audio, picker, helpers) */
 "use strict";
 const SB = (() => {
-  const BUILD_VERSION = "2026.10.13-8";
+  const BUILD_VERSION = "2026.10.14-1";
 
   /* ---------- swara <-> pitch ---------- */
   const SEMI = { S:0, R1:1, R2:2, R3:2, G1:2, G2:3, G3:4, M1:5, M2:6,
@@ -387,7 +387,7 @@ const SB = (() => {
                   `<button class="selchip" data-i="${i}">${selLabel(n)}<span class="x">×</span></button>`
                 ).join("") : `<span class="ph">tap swaras…</span>`) +
               `</div>` +
-              `<button class="donebtn2" id="pkDone" ${sel.length ? "" : "disabled"}>✅</button>`
+              `<button class="donebtn2" id="pkDone" ${sel.length ? "" : "disabled"}>Done</button>`
             : "") +
           `</div>`
         : "") +
