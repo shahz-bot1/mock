@@ -133,6 +133,9 @@ const store = {
   data: SB.load(LS_KEY, null) || { compositions: [] },
   save() { SB.save(LS_KEY, this.data); }
 };
+if (store.data.songRagaId === undefined) store.data.songRagaId = null; // last raga selected on this song
+const songRagaDefault = () =>
+  (store.data.songRagaId && SB.ragaById(store.data.songRagaId)) ? store.data.songRagaId : "mohanam";
 const comps = () => store.data.compositions;
 const LOOP_DEFS = [
   { id: "l1", name: "Pallavi — line 1", a: "0:32.0", b: "0:47.5" },
@@ -398,7 +401,7 @@ function buildBlocks() {
       let c = phraseFor(d.id);
       if (!c) {
         const now = Date.now();
-        c = { id: uid(), name: d.name, loopId: d.id, ragaId: "mohanam", saOffset: 0,
+        c = { id: uid(), name: d.name, loopId: d.id, ragaId: songRagaDefault(), saOffset: 0,
               tempo: 72, loop: false, chips: [], createdAt: now, updatedAt: now };
         comps().push(c); store.save();
       }
@@ -488,7 +491,7 @@ function renderEditor() {
   if (!c) { showList(); return; }
   document.getElementById("compName").value = c.name || "";
   const rs = document.getElementById("ragaSlot"); rs.innerHTML = "";
-  rs.appendChild(SB.ragaSelect(c.ragaId, v => { c.ragaId = v; touch(c); restartIfPlaying(); }, () => {
+  rs.appendChild(SB.ragaSelect(c.ragaId, v => { c.ragaId = v; store.data.songRagaId = v; touch(c); restartIfPlaying(); }, () => {
     try { localStorage.setItem("raga-resume-v1", JSON.stringify({ app: "looplab", loopId: c.loopId, ts: Date.now() })); } catch (err) {}
     location.href = "../raga-pick/?pick=1&return=" + encodeURIComponent(location.href.split("#")[0]);
   }));
@@ -632,7 +635,7 @@ document.getElementById("rawApply").onclick = () => {
   const clean = sanitizeComposition(obj);
   if (!clean) { alert("That doesn't look like a valid composition — check the chips and try again."); return; }
   stopPlayback();
-  c.name = clean.name; c.ragaId = clean.ragaId; c.saOffset = clean.saOffset;
+  c.name = clean.name; c.ragaId = clean.ragaId; store.data.songRagaId = clean.ragaId; c.saOffset = clean.saOffset;
   c.tempo = clean.tempo; c.loop = clean.loop; c.chips = clean.chips;
   touch(c);
   setRawMode(false);
@@ -675,6 +678,7 @@ function openEditor(id) {
   const c = comps().find(x => x.loopId === resume.loopId); if (!c) return;
   c.ragaId = SB.registerPickedRaga(pick);
   SB.noteRagaUsed(c.ragaId);
+  store.data.songRagaId = c.ragaId;
   store.save();
   openEditor(c.id);
 })();
