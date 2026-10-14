@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compose Studio — Swara Builder</title>
+<link rel="stylesheet" href="../swara-builder/core.css?v=2026.10.13-8">
+<style>
+  .crow { display: flex; align-items: center; gap: 12px; background: var(--panel);
+          border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
+          margin-bottom: 10px; cursor: pointer; }
+  .crow:active { background: var(--panel2); }
+  .crow .pbtn2 { flex: none; width: 42px; height: 42px; border-radius: 50%;
+          border: 1.5px solid var(--accent); background: var(--accent-soft);
+          color: var(--accent); font-size: 15px; cursor: pointer; }
+  .crow .pbtn2.playing { background: var(--accent); color: #fff; }
+  .crow .meta { flex: 1; min-width: 0; }
+  .crow .meta b { font-size: 16px; display: block; white-space: nowrap;
+          overflow: hidden; text-overflow: ellipsis; }
+  .crow .meta span { font-size: 12.5px; color: var(--muted); }
+  .crow .chev { color: var(--muted); font-size: 20px; flex: none; }
+  .edbar { display: flex; align-items: center; gap: 10px; margin: 2px 2px 12px; }
+  .titlein { flex: 1; min-width: 0; font: inherit; font-size: 17px; font-weight: 600;
+          color: var(--text); background: transparent; border: none;
+          border-bottom: 1px solid var(--border); padding: 4px 2px; }
+  .titlein:focus { outline: none; border-bottom-color: var(--accent); }
+  .switch { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
+  #rawText { width: 100%; box-sizing: border-box; font-family: ui-monospace, Menlo, monospace;
+          font-size: 12.5px; line-height: 1.55; color: var(--text); background: var(--panel2);
+          border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+  .hidden { display: none; }
+  .songt { font-size: 17px; font-weight: 700; margin: 2px 0 10px; }
+  .wave { position: relative; display: flex; align-items: center; gap: 2px; height: 64px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 8px; overflow: hidden; }
+  .wave i { flex: 1; background: var(--border); border-radius: 2px; min-height: 12%; }
+  .wave i.in { background: var(--accent); }
+  .wave .playhead { position: absolute; top: 4px; bottom: 4px; width: 2px; background: var(--warn); }
+  .wavelab { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .wavelab .loopname { color: var(--text); font-weight: 600; }
+  .spseg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+  .spseg button { background: var(--panel2); color: var(--muted); border: 0; padding: 8px 12px; font-size: 13px; cursor: pointer; }
+  .spseg button.on { background: var(--accent); color: #fff; }
+  .sechead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  #secStrip .fchip { cursor: default; }
+  .edtitle { font-weight: 700; font-size: 16px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="back" href="../swara-builder/index.html">‹ Playground</a>
+  <h1>LoopLab<small>loop practice — swaras for this loop · design mock</small></h1>
+  <span id="themeSlot"></span>
+</header>
+
+<!-- LOOP VIEW (design mock) -->
+<div id="listView">
+  <div class="card">
+    <h2>Now looping</h2>
+    <p class="songt">Muthai Tharu <span class="note">· Thiruppugazh (demo)</span></p>
+    <div class="wave" id="wave"></div>
+    <div class="wavelab"><span>A 0:32.0</span><span class="loopname">Pallavi — line 1 · 15.5s loop</span><span>B 0:47.5</span></div>
+    <div class="controls" style="margin-top:10px">
+      <button class="btn" id="loopPlay">▶ Play loop</button>
+      <span class="spseg" id="speedSeg"><button data-sp="0.5">0.5×</button><button data-sp="0.75">0.75×</button><button data-sp="1" class="on">1×</button></span>
+    </div>
+    <p class="note">Demo screen — waveform and loop audio are illustrative. The Swaras section below is the design under review.</p>
+  </div>
+
+  <div class="card" id="swaraCard">
+    <div class="sechead">
+      <h2 style="margin:0">Swaras</h2>
+      <span>
+        <button class="btn ghost" id="secAdd">＋ Add swaras</button>
+        <button class="btn ghost hidden" id="secEdit">✎ Edit</button>
+      </span>
+    </div>
+    <p class="note" id="secEmpty">No swaras for this loop yet. Tap ＋ Add swaras to compose the phrase you hear in this loop.</p>
+    <div id="secBody" class="hidden">
+      <div class="strip" id="secStrip"></div>
+      <div class="controls" style="margin-top:12px">
+        <button class="btn" id="secPlay">▶ Play</button>
+        <label class="f">Beat <span><input type="range" id="secTempo" min="30" max="120"> <b id="secTempoV"></b> bpm</span></label>
+      </div>
+      <p class="note" id="secMeta"></p>
+    </div>
+  </div>
+  <p class="note">This phrase is stored with the loop only — it never appears in Compose Studio. <a href="#" id="resetDemo">Reset demo</a></p>
+</div>
+
+<!-- EDITOR VIEW -->
+<div id="editorView" class="hidden">
+  <div class="edbar">
+    <a class="back" href="#" id="backBtn">‹ Loop</a>
+    <span class="edtitle">Compose swaras · Pallavi — line 1</span><input class="titlein" id="compName" type="text" placeholder="Composition name" style="display:none">
+  </div>
+  <div class="card" id="setupCard">
+    <h2>Setup</h2>
+    <div class="controls">
+      <label class="f">Raga<span id="ragaSlot"></span></label>
+      <label class="f">Sa<span id="saSlot"></span></label>
+      <label class="f">Beat <span><input type="range" id="tempo" min="30" max="120"> <b id="tempoV"></b> bpm</span></label>
+      <label class="switch"><input type="checkbox" id="loopChk"> Loop</label>
+    </div>
+    <div class="controls" style="margin-top:10px">
+      <button class="btn" id="edPlay">▶ Play</button>
+      <button class="btn" id="doneBtn">✓ Done</button>
+      <button class="btn ghost" id="exportBtn" style="display:none">Export</button>
+      <button class="btn ghost" id="rawBtn" style="display:none">{ } JSON</button>
+      <button class="btn danger" id="deleteBtn" style="display:none">Delete</button>
+    </div>
+    <p class="note">Tap a chip to edit it, or ＋ to append. Total beats: <b id="totBeats">0</b>.</p>
+  </div>
+  <div class="card" id="phraseCard">
+    <h2>Phrase</h2>
+    <div class="strip" id="strip"></div>
+  </div>
+  <div class="card hidden" id="rawCard">
+    <h2>Raw JSON</h2>
+    <textarea id="rawText" rows="16" spellcheck="false"></textarea>
+    <div class="controls" style="margin-top:10px">
+      <button class="btn" id="rawApply">Apply</button>
+      <button class="btn ghost" id="rawCopy">Copy all</button>
+      <button class="btn ghost" id="rawCancel">Cancel</button>
+    </div>
+    <p class="note">One chip per line — copy a section and paste it elsewhere to repeat it.
+    Apply validates everything first (same checks as Import); nothing is saved until it passes.</p>
+  </div>
+</div>
+
+<script src="../swara-builder/core.js?v=2026.10.13-8"></script>
+<script>
+"use strict";
+SB.applyTheme("sb-theme");
+document.getElementById("themeSlot").appendChild(SB.themeBtn("sb-theme"));
+
+const SAMPLES = "../swara-builder/samples/harmonium/";
+const LS_KEY = "looplab-demo-v1";
+const DURS = [0.25, 0.5, 1, 2, 4];
+const durLabel = b => b === 1 ? "1 beat" : b === 0.5 ? "½ beat" : b === 0.25 ? "¼ beat" : b + " beats";
+const uid = () => "c" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+
+const store = {
+  data: SB.load(LS_KEY, null) || { compositions: [] },
+  save() { SB.save(LS_KEY, this.data); }
+};
+const comps = () => store.data.compositions;
+if (!store.data.seeded) {
+  const now = Date.now();
+  comps().push({ id: uid(), name: "Pallavi — line 1", ragaId: "mohanam", saOffset: 0,
+    tempo: 72, loop: false, createdAt: now, updatedAt: now,
+    chips: [
+      { k: "note", stack: [{ st: "S", oct: 0 }], beats: 1 },
+      { k: "note", stack: [{ st: "R2", oct: 0 }, { st: "G3", oct: 0 }], beats: 1 },
+      { k: "note", stack: [{ st: "P", oct: 0 }], beats: 1 },
+      { k: "hold", beats: 1 },
+      { k: "note", stack: [{ st: "D2", oct: 0 }], beats: 1 },
+      { k: "note", stack: [{ st: "S", oct: 1 }], beats: 1 },
+      { k: "note", stack: [{ st: "D2", oct: 0 }, { st: "P", oct: 0 }], beats: 1 },
+      { k: "note", stack: [{ st: "G3", oct: 0 }], beats: 1 },
+      { k: "note", stack: [{ st: "R2", oct: 0 }], beats: 1 },
+      { k: "note", stack: [{ st: "S", oct: 0 }], beats: 2 }
+    ] });
+  store.data.seeded = true;
+  store.save();
+}
+const byId = id => comps().find(c => c.id === id) || null;
+
+let view = "list", openId = null;
+const cur = () => (openId ? byId(openId) : null);
+function touch(c) { c.updatedAt = Date.now(); store.save(); }
+
+function fmtBeats(b) {
+  const w = Math.floor(b + 1e-9), f = Math.round((b - w) * 100) / 100;
+  const fm = { 0: "", 0.25: "¼", 0.5: "½", 0.75: "¾" };
+  const fs = fm[f] !== undefined ? fm[f] : (f ? String(f) : "");
+  return w ? w + fs : (fs || "0");
+}
+const totBeats = c => c.chips.reduce((a, x) => a + x.beats, 0);
+const fmtDate = ts => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+const ragaName = id => (id && SB.ragaById(id)) ? SB.ragaById(id).name : "Chromatic";
+function chipLabel(ch) {
+  return ch.k === "note" ? SB.chipLabelHTML({ k: "note", stack: ch.stack })
+    : ch.k === "hold" ? "," : "–";
+}
+
+/* ---------- import sanitizer ---------- */
+function sanitizeComposition(raw) {
+  const c = raw && raw.composition ? raw.composition : raw;
+  if (!c || !Array.isArray(c.chips)) return null;
+  const chips = [];
+  for (const ch of c.chips) {
+    if (!ch || typeof ch !== "object") return null;
+    const beats = DURS.includes(ch.beats) ? ch.beats : 1;
+    if (ch.k === "hold" || ch.k === "gap") { chips.push({ k: ch.k, beats }); continue; }
+    if (ch.k !== "note" || !Array.isArray(ch.stack) || !ch.stack.length) return null;
+    const stack = [];
+    for (const n of ch.stack) {
+      if (n && n.hold === true) stack.push({ hold: true });
+      else if (n && SB.SEMI[n.st] !== undefined)
+        stack.push({ st: n.st, oct: [-1, 0, 1].includes(n.oct) ? n.oct : 0 });
+      else return null;
+    }
+    chips.push({ k: "note", stack, beats });
+  }
+  return {
+    name: typeof c.name === "string" && c.name.trim() ? c.name : "Imported composition",
+    ragaId: SB.ragaById(c.ragaId) ? c.ragaId : null,
+    saOffset: Number.isInteger(c.saOffset) && c.saOffset >= 0 && c.saOffset < 12 ? c.saOffset : 0,
+    tempo: Math.min(120, Math.max(30, +c.tempo || 60)),
+    loop: !!c.loop,
+    chips,
+  };
+}
+
+/* ---------- playback (shared: list rows + editor) ---------- */
+let pb = null, pbToken = 0; // pb: { comp, timers }
+function stopPlayback() {
+  pbToken++;
+  if (!pb) { refreshPlayButtons(); return; }
+  pb.timers.forEach(clearTimeout); pb = null;
+  SB.stopAll();
+  refreshPlayButtons();
+}
+async function startPlayback(c, onChip) {
+  stopPlayback();
+  if (!c.chips.length) return;
+  const token = ++pbToken;
+  SB.ensureAudio();
+  try { await SB.ensureSamples(SAMPLES); } catch (e) {}
+  if (token !== pbToken) return; // superseded while samples loaded
+  const beat = 60 / c.tempo, t0 = SB.ensureAudio().currentTime + 0.1;
+  const timers = [];
+  const mine = { comp: c, timers };
+  pb = mine;
+  refreshPlayButtons();
+  // expand: holds and all-hold stacks extend the previous sounding chip
+  const evs = [];
+  let pending = null;
+  const flush = () => { if (pending) { evs.push(pending); pending = null; } };
+  let t = t0;
+  c.chips.forEach((ch, ci) => {
+    const ct = t;
+    timers.push(setTimeout(() => { if (pb === mine && onChip) onChip(ci); },
+      Math.max(0, (ct - t0) * 1000)));
+    if (ch.k === "hold") { if (pending) pending.dur += ch.beats * beat; t += ch.beats * beat; return; }
+    if (ch.k === "note" && ch.stack.length && ch.stack.every(n => n.hold)) {
+      if (pending) pending.dur += ch.beats * beat; t += ch.beats * beat; return;
+    }
+    flush();
+    if (ch.k === "note") pending = { chip: ch, t, dur: ch.beats * beat };
+    t += ch.beats * beat;
+  });
+  flush();
+  evs.forEach(ev => {
+    const stack = ev.chip.stack || [];
+    const n = stack.length;
+    if (!n) return;
+    // a hold inside the stack extends the preceding sub-note
+    const units = [];
+    stack.forEach(sn => {
+      if (sn.hold) { if (units.length) units[units.length - 1].shares += 1; }
+      else units.push({ note: sn, shares: 1 });
+    });
+    if (!units.length) return;
+    const ownDur = ev.chip.beats * beat; // stack subdivides its OWN chip duration
+    const sub = ownDur / n;
+    const extra = ev.dur - ownDur; // outer holds extend the final sub-note only
+    let st = ev.t;
+    units.forEach((u, ui) => {
+      let ud = u.shares * sub;
+      if (ui === units.length - 1) ud += extra;
+      SB.playNote(st, u.note.st, u.note.oct, c.saOffset, ud + Math.min(0.28, ud * 0.7));
+      st += ud;
+    });
+  });
+  timers.push(setTimeout(() => {
+    if (pb !== mine) return;
+    if (c.loop && (openId === c.id || view === "list")) { startPlayback(c, onChip); return; }
+    pb = null;
+    if (onChip) onChip(-1);
+    refreshPlayButtons();
+  }, (t - t0) * 1000 + 400));
+}
+function togglePlay(c, onChip) {
+  if (pb && pb.comp.id === c.id) stopPlayback();
+  else startPlayback(c, onChip);
+}
+function restartIfPlaying() {
+  const c = cur() || phrase();
+  if (pb && c && pb.comp.id === c.id) startPlayback(c, highlightChip);
+}
+function refreshPlayButtons() {
+  document.querySelectorAll("[data-play]").forEach(b => {
+    const active = !!pb && pb.comp.id === b.dataset.play;
+    b.textContent = active ? "⏹" : "▶";
+    b.classList.toggle("playing", active);
+  });
+  const ep = document.getElementById("edPlay");
+  if (ep) {
+    const active = !!pb && !!openId && pb.comp.id === openId;
+    ep.textContent = active ? "⏹ Stop" : "▶ Play";
+    ep.classList.toggle("playing", active);
+  }
+  const sp = document.getElementById("secPlay");
+  if (sp) {
+    const pc = phrase();
+    const active = !!pb && !!pc && pb.comp.id === pc.id;
+    sp.textContent = active ? "⏹ Stop" : "▶ Play";
+    sp.classList.toggle("playing", active);
+  }
+}
+const secHighlight = i => {
+  document.querySelectorAll("#secStrip .fchip.cur").forEach(x => x.classList.remove("cur"));
+  if (i < 0 || view !== "list") return;
+  const host = document.getElementById("secStrip");
+  if (host && host.children[i]) host.children[i].classList.add("cur");
+};
+function phrase() { return comps()[0] || null; }
+const highlightChip = i => {
+  document.querySelectorAll(".fchip.cur").forEach(x => x.classList.remove("cur"));
+  if (i < 0 || view !== "editor") return;
+  const host = document.getElementById("strip");
+  if (host && host.children[i]) host.children[i].classList.add("cur");
+};
+
+/* ---------- list view ---------- */
+function renderList() { renderSection(); refreshPlayButtons(); }
+function renderSection() {
+  const c = phrase();
+  const has = !!c && c.chips.length > 0;
+  document.getElementById("secEmpty").style.display = has ? "none" : "";
+  document.getElementById("secBody").classList.toggle("hidden", !has);
+  document.getElementById("secAdd").classList.toggle("hidden", has);
+  document.getElementById("secEdit").classList.toggle("hidden", !has);
+  if (!has) return;
+  const host = document.getElementById("secStrip");
+  host.innerHTML = "";
+  c.chips.forEach(ch => {
+    const el = document.createElement("div");
+    el.className = "fchip" + (ch.k === "gap" ? " gapc" : ch.k === "hold" ? " holdc" : "");
+    el.innerHTML = chipLabel(ch) + `<span class="dur">${durLabel(ch.beats)}</span>`;
+    host.appendChild(el);
+  });
+  document.getElementById("secTempo").value = c.tempo;
+  document.getElementById("secTempoV").textContent = c.tempo;
+  document.getElementById("secMeta").textContent =
+    `${ragaName(c.ragaId)} · ${fmtBeats(totBeats(c))} beats · read-only — tap Edit to change the swaras`;
+}
+document.getElementById("secAdd").onclick = () => {
+  let c = phrase();
+  if (!c) {
+    const now = Date.now();
+    c = { id: uid(), name: "Pallavi — line 1", ragaId: "mohanam", saOffset: 0,
+          tempo: 72, loop: false, chips: [], createdAt: now, updatedAt: now };
+    comps().push(c); store.save();
+  }
+  openEditor(c.id);
+};
+document.getElementById("secEdit").onclick = () => { const c = phrase(); if (c) openEditor(c.id); };
+document.getElementById("secPlay").onclick = () => {
+  const c = phrase(); if (!c || !c.chips.length) return;
+  togglePlay(c, secHighlight);
+};
+document.getElementById("secTempo").oninput = e => {
+  const c = phrase(); if (!c) return;
+  c.tempo = +e.target.value;
+  document.getElementById("secTempoV").textContent = c.tempo;
+  touch(c); restartIfPlaying();
+};
+document.getElementById("resetDemo").onclick = e => {
+  e.preventDefault();
+  try { localStorage.removeItem(LS_KEY); } catch (err) {}
+  location.reload();
+};
+document.getElementById("doneBtn").onclick = () => showList();
+
+/* ---------- demo waveform + loop transport (illustrative) ---------- */
+(() => {
+  const wave = document.getElementById("wave");
+  for (let i = 0; i < 48; i++) {
+    const b = document.createElement("i");
+    b.style.height = Math.round(24 + Math.abs(Math.sin(i * 1.7)) * 68) + "%";
+    if (i >= 14 && i < 30) b.className = "in";
+    wave.appendChild(b);
+  }
+  const head = document.createElement("span");
+  head.className = "playhead";
+  head.style.display = "none";
+  wave.appendChild(head);
+  let playing = false, raf = null, startT = 0, speed = 1;
+  const DUR = 15.5;
+  const btn = document.getElementById("loopPlay");
+  const step = ts => {
+    const p = ((ts - startT) / 1000 * speed / DUR) % 1;
+    head.style.left = (29.2 + p * 33.3) + "%";
+    raf = requestAnimationFrame(step);
+  };
+  btn.onclick = () => {
+    playing = !playing;
+    btn.textContent = playing ? "⏹ Stop loop" : "▶ Play loop";
+    head.style.display = playing ? "" : "none";
+    if (playing) { startT = performance.now(); raf = requestAnimationFrame(step); }
+    else cancelAnimationFrame(raf);
+  };
+  document.getElementById("speedSeg").querySelectorAll("button").forEach(b => {
+    b.onclick = () => {
+      speed = +b.dataset.sp;
+      document.getElementById("speedSeg").querySelectorAll("button")
+        .forEach(x => x.classList.toggle("on", x === b));
+      if (playing) startT = performance.now();
+    };
+  });
+})();
+
+/* ---------- editor view ---------- */
+function renderStrip() {
+  const c = cur(); if (!c) return;
+  const host = document.getElementById("strip");
+  host.innerHTML = "";
+  c.chips.forEach((ch, i) => {
+    const el = document.createElement("div");
+    el.className = "fchip" + (ch.k === "gap" ? " gapc" : ch.k === "hold" ? " holdc" : "");
+    el.innerHTML = chipLabel(ch) + `<span class="dur">${durLabel(ch.beats)}</span>`;
+    el.onclick = () => onChipTap(i);
+    host.appendChild(el);
+  });
+  const add = document.createElement("div");
+  add.className = "fchip addc";
+  add.textContent = "＋";
+  add.onclick = () => onChipTap(-1);
+  host.appendChild(add);
+  document.getElementById("totBeats").textContent = fmtBeats(totBeats(c));
+}
+function renderEditor() {
+  const c = cur();
+  if (!c) { showList(); return; }
+  document.getElementById("compName").value = c.name || "";
+  const rs = document.getElementById("ragaSlot"); rs.innerHTML = "";
+  rs.appendChild(SB.ragaSelect(c.ragaId, v => { c.ragaId = v; touch(c); restartIfPlaying(); }));
+  const ss = document.getElementById("saSlot"); ss.innerHTML = "";
+  ss.appendChild(SB.saSelect(c.saOffset, v => { c.saOffset = v; touch(c); restartIfPlaying(); }));
+  const t = document.getElementById("tempo");
+  t.value = c.tempo;
+  document.getElementById("tempoV").textContent = c.tempo;
+  document.getElementById("loopChk").checked = !!c.loop;
+  renderStrip();
+  refreshPlayButtons();
+}
+function pickNewChip(title, ragaId, done) {
+  let beats = 1;
+  SB.openPicker({ title, ragaId, stackMode: true,
+    duration: { value: beats, options: DURS },
+    onDuration: v => { beats = v; },
+    onPick: p => {
+      if (p.kind === "swara") done({ k: "note", stack: [{ st: p.st, oct: p.oct }], beats });
+      else if (p.kind === "hold") done({ k: "hold", beats });
+      else if (p.kind === "gap") done({ k: "gap", beats });
+      else if (p.kind === "stack") done({ k: "note", stack: p.stack, beats });
+    }});
+}
+function onChipTap(i) {
+  const c = cur(); if (!c) return;
+  if (i < 0) {
+    pickNewChip("Append swara", c.ragaId, chip => {
+      stopPlayback();
+      c.chips.push(chip);
+      touch(c); renderStrip(); refreshPlayButtons();
+    });
+    return;
+  }
+  const ch = c.chips[i];
+  SB.openPicker({ title: `Edit chip #${i + 1}`, ragaId: c.ragaId, stackMode: true,
+    insert: true,
+    onInsert: where => {
+      const at = where === "before" ? i : i + 1;
+      pickNewChip(`Insert ${where} chip #${i + 1}`, c.ragaId, chip => {
+        stopPlayback();
+        c.chips.splice(at, 0, chip);
+        touch(c); renderStrip(); refreshPlayButtons();
+      });
+    },
+    current: `Now: ${chipLabel(ch)}`,
+    prefill: ch.k === "note" ? ch.stack : ch.k === "hold" ? [{ hold: true }] : null,
+    stackOn: ch.k === "note" && ch.stack.length > 1,
+    duration: { value: ch.beats, options: DURS },
+    onDuration: v => { c.chips[i].beats = v; touch(c); renderStrip(); },
+    onPick: p => {
+      stopPlayback();
+      if (p.kind === "swara") c.chips[i] = { k: "note", stack: [{ st: p.st, oct: p.oct }], beats: ch.beats };
+      else if (p.kind === "hold") c.chips[i] = { k: "hold", beats: ch.beats };
+      else if (p.kind === "gap") c.chips[i] = { k: "gap", beats: ch.beats };
+      else if (p.kind === "clear") c.chips.splice(i, 1);
+      else if (p.kind === "stack") c.chips[i] = { k: "note", stack: p.stack, beats: ch.beats };
+      else return;
+      touch(c); renderStrip(); refreshPlayButtons();
+    }});
+}
+document.getElementById("compName").addEventListener("input", e => {
+  const c = cur(); if (!c) return;
+  c.name = e.target.value; touch(c);
+});
+document.getElementById("tempo").oninput = e => {
+  const c = cur(); if (!c) return;
+  c.tempo = +e.target.value;
+  document.getElementById("tempoV").textContent = c.tempo;
+  touch(c); restartIfPlaying();
+};
+document.getElementById("loopChk").onchange = e => {
+  const c = cur(); if (c) { c.loop = e.target.checked; touch(c); }
+};
+document.getElementById("edPlay").onclick = () => {
+  const c = cur(); if (!c || !c.chips.length) return;
+  togglePlay(c, highlightChip);
+};
+document.getElementById("exportBtn").onclick = () => {
+  const c = cur(); if (!c) return;
+  const payload = {
+    app: "Compose Studio", version: 1, kind: "composition",
+    composition: {
+      name: c.name || "Untitled composition",
+      ragaId: c.ragaId, saOffset: c.saOffset, tempo: c.tempo, loop: !!c.loop,
+      chips: c.chips,
+    },
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const slug = (c.name || "").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-").toLowerCase();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = (slug || "composition") + ".json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+document.getElementById("deleteBtn").onclick = () => {
+  const c = cur(); if (!c) return;
+  if (!confirm(`Delete "${c.name || "Untitled"}"? This can't be undone.`)) return;
+  stopPlayback();
+  store.data.compositions = comps().filter(x => x.id !== c.id);
+  store.save();
+  showList();
+};
+document.getElementById("backBtn").onclick = e => { e.preventDefault(); showList(); };
+
+/* ---------- raw JSON mode ---------- */
+let rawMode = false;
+function compToRawText(c) {
+  const head = [
+    '  "name": ' + JSON.stringify(c.name || ""),
+    '  "ragaId": ' + JSON.stringify(c.ragaId || null),
+    '  "saOffset": ' + (c.saOffset | 0),
+    '  "tempo": ' + c.tempo,
+    '  "loop": ' + (c.loop ? "true" : "false"),
+  ];
+  let s = "{\n" + head.join(",\n") + ',\n  "chips": [';
+  if (c.chips.length)
+    s += "\n" + c.chips.map(ch => "    " + JSON.stringify(ch)).join(",\n") + "\n  ";
+  return s + "]\n}";
+}
+function setRawMode(on) {
+  const c = cur();
+  rawMode = !!on && !!c;
+  if (rawMode) {
+    stopPlayback();
+    document.getElementById("rawText").value = compToRawText(c);
+  }
+  document.getElementById("rawCard").classList.toggle("hidden", !rawMode);
+  document.getElementById("setupCard").classList.toggle("hidden", rawMode);
+  document.getElementById("phraseCard").classList.toggle("hidden", rawMode);
+  document.getElementById("rawBtn").textContent = rawMode ? "♪ Phrase" : "{ } JSON";
+}
+document.getElementById("rawBtn").onclick = () => setRawMode(!rawMode);
+document.getElementById("rawCancel").onclick = () => setRawMode(false);
+document.getElementById("rawApply").onclick = () => {
+  const c = cur(); if (!c) return;
+  let obj;
+  try { obj = JSON.parse(document.getElementById("rawText").value); }
+  catch (e) { alert("Invalid JSON: " + e.message); return; }
+  const clean = sanitizeComposition(obj);
+  if (!clean) { alert("That doesn't look like a valid composition — check the chips and try again."); return; }
+  stopPlayback();
+  c.name = clean.name; c.ragaId = clean.ragaId; c.saOffset = clean.saOffset;
+  c.tempo = clean.tempo; c.loop = clean.loop; c.chips = clean.chips;
+  touch(c);
+  setRawMode(false);
+  renderEditor();
+};
+document.getElementById("rawCopy").onclick = async () => {
+  const ta = document.getElementById("rawText");
+  const btn = document.getElementById("rawCopy");
+  try { await navigator.clipboard.writeText(ta.value); }
+  catch (e) {
+    ta.focus(); ta.select();
+    try { document.execCommand("copy"); } catch (e2) {}
+  }
+  const old = btn.textContent;
+  btn.textContent = "Copied ✓";
+  setTimeout(() => { btn.textContent = old; }, 1200);
+};
+
+/* ---------- navigation ---------- */
+function render() {
+  document.getElementById("listView").classList.toggle("hidden", view !== "list");
+  document.getElementById("editorView").classList.toggle("hidden", view !== "editor");
+  if (view === "list") renderList(); else renderEditor();
+}
+function showList() { stopPlayback(); setRawMode(false); view = "list"; openId = null; render(); }
+function openEditor(id) { stopPlayback(); setRawMode(false); view = "editor"; openId = id; render(); }
+
+document.body.appendChild(SB.footer());
+render();
+</script>
+</body>
+</html>
