@@ -44,6 +44,12 @@
   [data-role="strip"] .fchip { cursor: default; }
   .loopsub { font-size: 12.5px; color: var(--muted); margin: 0 0 8px; }
   .edtitle { font-weight: 700; font-size: 16px; }
+  .roundplay { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff;
+    border: 0; font-size: 15px; cursor: pointer; vertical-align: middle; margin-right: 8px; padding: 0; }
+  .roundplay.playing { background: var(--warn); color: #111; }
+  .temporow { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 13.5px; color: var(--muted); }
+  .temporow input[type="range"] { flex: 1; }
+  .temporow b { color: var(--text); min-width: 52px; text-align: right; }
 </style>
 </head>
 <body>
@@ -294,7 +300,7 @@ function refreshPlayButtons() {
     const btn = blk.querySelector('[data-act="play"]'); if (!btn) return;
     const pc = phraseFor(d.id);
     const active = !!pb && !!pc && pb.comp.id === pc.id;
-    btn.textContent = active ? "⏹ Stop" : "▶ Play";
+    btn.textContent = active ? "⏹" : "▶";
     btn.classList.toggle("playing", active);
   });
 }
@@ -325,6 +331,7 @@ function renderSection(loopId) {
   q('[data-role="body"]').classList.toggle("hidden", !has);
   q('[data-act="add"]').classList.toggle("hidden", has);
   q('[data-act="edit"]').classList.toggle("hidden", !has);
+  q('[data-act="play"]').classList.toggle("hidden", !has);
   if (!has) return;
   const host = q('[data-role="strip"]');
   host.innerHTML = "";
@@ -335,7 +342,7 @@ function renderSection(loopId) {
     host.appendChild(el);
   });
   q('[data-role="tempo"]').value = c.tempo;
-  q('[data-role="tempoV"]').textContent = c.tempo;
+  q('[data-role="tempoV"]').textContent = c.tempo + " bpm";
   q('[data-role="meta"]').textContent =
     `${ragaName(c.ragaId)} · ${fmtBeats(totBeats(c))} beats · read-only — tap Edit to change the swaras`;
 }
@@ -355,7 +362,9 @@ function buildBlocks() {
     add.className = "btn ghost"; add.dataset.act = "add"; add.textContent = "＋ Add swaras";
     const edit = document.createElement("button");
     edit.className = "btn ghost hidden"; edit.dataset.act = "edit"; edit.textContent = "✎ Edit";
-    btns.appendChild(add); btns.appendChild(edit);
+    const play = document.createElement("button");
+    play.className = "roundplay hidden"; play.dataset.act = "play"; play.textContent = "▶";
+    btns.appendChild(add); btns.appendChild(play); btns.appendChild(edit);
     head.appendChild(h); head.appendChild(btns);
     card.appendChild(head);
     const sub = document.createElement("p");
@@ -371,21 +380,14 @@ function buildBlocks() {
     const strip = document.createElement("div");
     strip.className = "strip"; strip.dataset.role = "strip";
     body.appendChild(strip);
-    const ctrls = document.createElement("div");
-    ctrls.className = "controls"; ctrls.style.marginTop = "12px";
-    const play = document.createElement("button");
-    play.className = "btn"; play.dataset.act = "play"; play.textContent = "▶ Play";
-    const lab = document.createElement("label");
-    lab.className = "f"; lab.textContent = "Beat ";
-    const span = document.createElement("span");
+    const trow = document.createElement("div");
+    trow.className = "temporow";
+    const tlab = document.createElement("span"); tlab.textContent = "Tempo";
     const rng = document.createElement("input");
     rng.type = "range"; rng.min = "30"; rng.max = "120"; rng.dataset.role = "tempo";
     const bv = document.createElement("b"); bv.dataset.role = "tempoV";
-    span.appendChild(rng); span.appendChild(document.createTextNode(" ")); span.appendChild(bv);
-    span.appendChild(document.createTextNode(" bpm"));
-    lab.appendChild(span);
-    ctrls.appendChild(play); ctrls.appendChild(lab);
-    body.appendChild(ctrls);
+    trow.appendChild(tlab); trow.appendChild(rng); trow.appendChild(bv);
+    body.appendChild(trow);
     const meta = document.createElement("p");
     meta.className = "note"; meta.dataset.role = "meta";
     body.appendChild(meta);
@@ -410,7 +412,7 @@ function buildBlocks() {
     rng.oninput = e => {
       const c = phraseFor(d.id); if (!c) return;
       c.tempo = +e.target.value;
-      bv.textContent = c.tempo;
+      bv.textContent = c.tempo + " bpm";
       touch(c);
       if (pb && pb.comp.id === c.id) startPlayback(c, highlightIn(d.id));
     };
