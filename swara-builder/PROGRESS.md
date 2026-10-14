@@ -158,3 +158,5 @@ Adi tala only for now.
 - 2026-10-13 (build 2026.10.13-7): chips now show octave dots without losing the compact one-line layout — each swara is an inline-flex column with reserved 9px dot slots above/below (user-approved from a rendered mockup). Same CSS shipped in RagaMentor Compose Studio. Picker list is the aro+ava union (build -6).
 
 - 2026-10-13 (build 2026.10.13-8): chip octave marks are now combining diacritic dots on the letter glyph (scholarly print style, user-chosen over the reserved-slot design): new SB.chipLabelHTML for chips in P3 + Compose preview; P1 slots keep slotLabelHTML/CSS dots. Shipped Compose Studio uses the same diacritic labels.
+
+- 2026-10-14: LoopLab swaras-section design mock (looplab-swaras/): loop-private phrase — Swaras section on the loop screen with Add/Edit, read-only diacritic chips, Play + tempo in the section, composer = the Compose editor forked. Stored under its own key, never in Compose Studio. Awaiting user design feedback.
