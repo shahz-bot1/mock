@@ -160,3 +160,5 @@ Adi tala only for now.
 - 2026-10-13 (build 2026.10.13-8): chip octave marks are now combining diacritic dots on the letter glyph (scholarly print style, user-chosen over the reserved-slot design): new SB.chipLabelHTML for chips in P3 + Compose preview; P1 slots keep slotLabelHTML/CSS dots. Shipped Compose Studio uses the same diacritic labels.
 
 - 2026-10-14: LoopLab swaras-section design mock (looplab-swaras/): loop-private phrase — Swaras section on the loop screen with Add/Edit, read-only diacritic chips, Play + tempo in the section, composer = the Compose editor forked. Stored under its own key, never in Compose Studio. Awaiting user design feedback.
+
+- 2026-10-14: LoopLab swaras mock v2 — two loops per song, each with its own Swaras section: line 1 filled, line 2 shows the EMPTY state (user asked for it explicitly). Per-loop Add/Edit/Play/tempo; phrases carry a loopId.
