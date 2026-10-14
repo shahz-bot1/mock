@@ -90,7 +90,7 @@
       <button class="btn" id="doneBtn">✓ Done</button>
       <button class="btn ghost" id="exportBtn" style="display:none">Export</button>
       <button class="btn ghost" id="rawBtn" style="display:none">{ } JSON</button>
-      <button class="btn danger" id="deleteBtn" style="display:none">Delete</button>
+      <button class="btn danger" id="deleteBtn">Delete swaras</button>
     </div>
     <p class="note">Tap a chip to edit it, or ＋ to append. Total beats: <b id="totBeats">0</b>.</p>
   </div>
@@ -582,7 +582,7 @@ document.getElementById("exportBtn").onclick = () => {
 };
 document.getElementById("deleteBtn").onclick = () => {
   const c = cur(); if (!c) return;
-  if (!confirm(`Delete "${c.name || "Untitled"}"? This can't be undone.`)) return;
+  if (!confirm(`Delete the swaras for "${c.name || "this loop"}"? This can't be undone.`)) return;
   stopPlayback();
   store.data.compositions = comps().filter(x => x.id !== c.id);
   store.save();
